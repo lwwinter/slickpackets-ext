@@ -1,4 +1,4 @@
-package org.timecrunch;
+//package org.timecrunch;
 
 import java.util.ArrayList;
 
@@ -6,24 +6,28 @@ public abstract class Link implements ISchedulerSource {
 	// may want to implement unique link id differently (or not at all) - may be useful though
 	private static int gLinkId = 0;
 	private int mLinkId;
+	protected String mId;
 
 	protected IQScheme mQueue;
 	private Host[] mHosts;
 	protected boolean mEnabled; // false = failed/disabled
+	protected SimScheduler mSched;
 
 	public Link(IQScheme qscheme, ArrayList<Host> hosts) {
 		mQueue = qscheme;
 		mHosts = hosts.toArray(mHosts);
 		mLinkId = gLinkId++;
+		mId = "Link#" + mLinkId;
+		mSched = null;
 	}
 
 	// Corresponds to departure event
-	public abstract void sendTo(Packet p, Host dest);
+	public abstract void deliver(Packet p, Host dest);
 
 	// Corresponds to arrival event
 	public abstract void recvFrom(Packet p, Host src);
 
-	public abstract boolean isLinkFree();
+	public abstract long getDelayUntilFree(Host src);
 
 	public boolean isEnabled() {
 		return mEnabled;
@@ -54,7 +58,30 @@ public abstract class Link implements ISchedulerSource {
 		return mQueue.size();
 	}
 
+	public int getLinkId() {
+		return mLinkId;
+	}
+
+	public String getId() {
+		return mId;
+	}
+
+	public void setId(String id) {
+		if(id != null) {
+			mId = id;
+		}
+	}
+
 	// from Interface ISchedulerSource
-	//public abstract void schedCallback(ISchedulable event);
+	//public abstract void schedCallback(SchedulableType type);
+
+	public void registerScheduler(SimScheduler sched) {
+		mSched = sched;
+	}
+		
+
+	public SimScheduler getScheduler() {
+		return mSched;
+	}
 
 }

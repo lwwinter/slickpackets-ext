@@ -1,4 +1,4 @@
-package org.timecrunch;
+//package org.timecrunch;
 
 import java.util.ArrayList;
 
@@ -14,6 +14,14 @@ public class Simulator {
 
 		SimLoader loader = new SimLoader();
 		loader.load(config_file,this);
+
+		for(Host h : mHosts) {
+			h.registerScheduler(mScheduler);
+		}
+
+		for(Link l : mLinks) {
+			l.registerScheduler(mScheduler);
+		}
 	}
 
 	public void start() {

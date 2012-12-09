@@ -1,4 +1,4 @@
-package org.timecrunch;
+//package org.timecrunch;
 
 import java.util.ArrayList;
 
@@ -26,9 +26,15 @@ public class Router extends Host {
 		// TODO: attempt to receive packet and add to queue
 	}
 
-	public void schedCallback(ISchedulable event) {
-		// TODO: perform action when queued events are selected in the scheduler
-		// Probably just sendTo(p,nextRouter) or something similar here
+	@Override
+	public void schedCallback(SchedulableType type) {
+		// perform action when queued events are selected in the scheduler
+		super.schedCallback(type); // TODO: extend callback behavior?
+	}
+
+	@Override
+	public Link forward(Packet p) {
+		return super.forward(p); // TODO: extend forwarding behavior
 	}
 
 }

@@ -1,7 +1,17 @@
-package org.timecrunch;
+//package org.timecrunch;
+
+import java.lang.String;
 
 public interface ISchedulerSource {
 
-	void schedCallback(ISchedulable event);
+	String getId();
+
+	void setId(String id);
+
+	void schedCallback(SchedulableType type);
+
+	void registerScheduler(SimScheduler sched);
+
+	SimScheduler getScheduler();
 
 }
