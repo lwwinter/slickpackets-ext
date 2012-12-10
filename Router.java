@@ -1,18 +1,17 @@
 //package org.timecrunch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Router extends Host {
+	protected long mThroughput; // router throughput in bits/s
+	protected HashMap<Packet,Long> mArrivalTimes;
+	private long mBitUsProcessed; // used to model quantized delay even for any throughput
 	
-	protected long mPacketProcessTime;  // per packet process time, assume it's constant.
-	protected long mMaxQueingTime;      // queueing delay when queue was full
-	protected HashMap<Packet,Long> mCallbackTimes;
-	
-	public Router(long MaxQueingTime, long packetProcessTime , int qsize, ArrayList<Link> links) {
+	public Router(long throughput, int qsize, ArrayList<Link> links) {
 		super(new FifoQScheme(qsize),links);
-		mMaxQueingTime = MaxQueingTime ;
-		mPacketProcessTime = packetProcessTime ;
-		mCallbackTimes = new HashMap<Packet,Long>();
+		mThroughput = throughput;
+		mArrivalTimes = new HashMap<Packet,Long>();
 	}
 
 	public int queueCapacity() {
@@ -29,29 +28,37 @@ public class Router extends Host {
 		if(egress.isEnabled() == false) {
 			linkNotEnabledHandler(p);
 			return;
-			//TODO: read backup path from slick packet
-			
+			//TODO: read backup path from slick packet (within linkNotEnabledHandler?)
 		}
 
-		//TODO: read link utilization, implement slick packet ext. 
-		//if it's high loaded, sent probe packet; over loaded, using backup path
-		
-		
+		//TODO: read link utilization, implement slick packet ext. (within forward?) 
+		// If it's high loaded, sent probe packet; over loaded, using backup path
+
+		// Calculate and log queueing delay
+		if(GlobalSimSettings.LogDelays) {
+			long arrivalTime = mArrivalTimes.get(p);
+			long qDelay = mSched.getGlobalSimTime()-arrivalTime;
+			PacketDelays pd = p.getDelays();
+			pd.logQueueingDelay(qDelay);
+		}
+
 		// If the link says it is free, the packet is passed to the Link
 		long delay = egress.getDelayUntilFree(this);
 
 		if(delay > 0) {
 			// delay event until link will be free
-			SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,
-					mSched.getGlobalSimTime() + delay);
+			long tempTimestamp = mSched.getGlobalSimTime() + delay;
+			SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,tempTimestamp);
 			mSched.addEvent(e);
-			return;
-		}
 
-		// process delay statistics
-		if(GlobalSimSettings.LogDelays) {
-			PacketDelays pd = p.getDelays();
-			pd.logLinkBusyDelay(delay);
+			// process link-delay statistics
+			if(GlobalSimSettings.LogDelays) {
+				PacketDelays pd = p.getDelays();
+				// set timestamp as new 'arrival' time to avoid duplicate queue-delay logging
+				mArrivalTimes.put(p,tempTimestamp);
+				pd.logLinkBusyDelay(delay);
+			}
+			return;
 		}
 		
 		egress.recvFrom(p,this);
@@ -66,30 +73,17 @@ public class Router extends Host {
 		}
 
 		boolean successfulQueue = enqueueEvent(p);
-		if(successfulQueue) { // successful added to queue
-			//TODO: consider non linear queueing delay?
-			long queueingDelay = queueUtilization()*mMaxQueingTime;
-			if(GlobalSimSettings.LogDelays) {
-				PacketDelays pd = p.getDelays();
-				pd.logQueueingDelay(queueingDelay);
-			}
-
-			long tempTimestamp = mSched.getGlobalSimTime() + queueingDelay;
-			tempTimestamp += mPacketProcessTime;
+		if(successfulQueue) { // successfully added to queue
+			long now = mSched.getGlobalSimTime();
+			mArrivalTimes.put(p,now);
 			if(queueSize() == 1) {
-				SimEvent e = new SimEvent(SchedulableType.DELIVERY,this,tempTimestamp);
+				// total delay will be logged as difference in timestamps in sendOn()
+				SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,now+getProcessingDelay(p));
 				mSched.addEvent(e);
-			} else {
-				mCallbackTimes.put(p,new Long(tempTimestamp));
 			}
-		}
-		// queue is full, drop packet?
-		else {
+		} else { // queue is full, drop packet
 			SimLogger.logDrop(p,this,mSched.getGlobalSimTime());
 		}
-		
-		
-		
 	}
 
 	@Override
@@ -101,6 +95,13 @@ public class Router extends Host {
 	@Override
 	public Link forward(Packet p) {
 		return super.forward(p); // TODO: extend forwarding behavior
+	}
+
+	private long getProcessingDelay(Packet p) {
+		mBitUsProcessed += p.size()*1000000;
+		long processingDelay = mBitUsProcessed/mThroughput;
+		mBitUsProcessed %= mThroughput;
+		return processingDelay;
 	}
 
 }
