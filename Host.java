@@ -12,15 +12,23 @@ public abstract class Host implements ISchedulerSource {
 
 	/* 'links' array will not change during runtime.
 	 * If this behavior is desired, subclass Link and implement accordingly. */
-	private Link[] mLinks;
+	protected ArrayList<Link> mLinks;
 	protected SimScheduler mSched;
+
+	public Host(IQScheme qscheme) {
+		this(qscheme,null);
+	}
 
 	public Host(IQScheme qscheme, ArrayList<Link> links) {
 		mQueue = qscheme;
-		mLinks = links.toArray(mLinks);
 		mHostId = gHostId++;
 		mId = "Host#" + mHostId;
 		mSched = null;
+		if(links == null) {
+			mLinks = new ArrayList<Link>(links);
+		} else {
+			mLinks = new ArrayList<Link>();
+		}
 	}
 
 	// Corresponds to departure event
@@ -32,15 +40,20 @@ public abstract class Host implements ISchedulerSource {
 	// Takes a packet and returns the link to forward on
 	public Link forward(Packet p) {
 		// default fallback behavior - send on first link
-		if(mLinks.length == 0) {
+		if(mLinks.size() == 0) {
 			return null;
 		}
 
-		return mLinks[0];
+		return mLinks.get(0);
 	}
 
 	public Link[] getLinks() {
-		return mLinks;
+		Link[] temp = new Link[0];
+		return mLinks.toArray(temp);
+	}
+
+	public void addLink(Link c) {
+		mLinks.add(c);
 	}
 
 	// returns true if enqueue succeeded, false otherwise (ie packet drop)
