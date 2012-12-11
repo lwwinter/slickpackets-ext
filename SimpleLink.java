@@ -1,100 +1,98 @@
 //package org.timecrunch;
 
+/* SimpleLink.java
+ * Simple duplex link composed of two SimplexLinks
+ */
+
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.lang.Long;
-import java.lang.Integer;
 
 public class SimpleLink extends Link {
 	protected long mBandwidth;
 	protected long mLatency;
-	protected HashMap<Integer,Long> mLinkClearTimes;
-	protected HashMap<Packet,Long> mCallbackTimes;
+	protected SimplexLink mAtoB;
+	protected SimplexLink mBtoA;
 
 	public SimpleLink(long bandwidth, long latency, ArrayList<Host> hosts) {
-		super(new InfFifoQScheme(), hosts);
+		super(null, hosts);
+		assert (hosts.size() == 2) : new String("SimpleLink takes exactly 2 hosts");
 		mBandwidth = bandwidth;
 		mLatency = latency;
-		mLinkClearTimes = new HashMap<Integer,Long>();
-		mCallbackTimes = new HashMap<Packet,Long>();
+		mAtoB = new SimplexLink(bandwidth,latency,hosts);
+		ArrayList<Host> rev = new ArrayList<Host>();
+		rev.add(hosts.get(1));
+		rev.add(hosts.get(0));
+		mBtoA = new SimplexLink(bandwidth,latency,rev);
+	}
+
+	private SimplexLink getLinkBySource(Host src) {
+		SimplexLink temp;
+		int hid = src.getHostId();
+		if(hid == mAtoB.getSrcHost().getHostId()) {
+			temp = mAtoB;
+		} else if(hid == mBtoA.getSrcHost().getHostId()) {
+			temp = mBtoA;
+		} else {
+			temp = null;
+		}
+
+		return temp;
+	}
+
+	private SimplexLink getLinkByDest(Host dest) {
+		SimplexLink temp;
+		int hid = dest.getHostId();
+		if(hid == mAtoB.getDstHost().getHostId()) {
+			temp = mAtoB;
+		} else if(hid == mBtoA.getDstHost().getHostId()) {
+			temp = mBtoA;
+		} else {
+			temp = null;
+		}
+
+		return temp;
 	}
 
 	public long getDelayUntilFree(Host src) {
-		Long clearTime = mLinkClearTimes.get(new Integer(src.getId()));
-		// TODO: Consider adding NoRegisteredSchedulerException vs null-check
-		if(clearTime == null || mSched == null) {
-			return 0;
+		SimplexLink link = getLinkBySource(src);
+		if(link != null) {
+			return link.getDelayUntilFree();
 		}
 
-		long delay = clearTime.longValue() - mSched.getGlobalSimTime();
-		if(delay < 0) {
-			return 0;
-		}
-
-		return delay;
+		// TODO: Consider this an error - SHOULD block simulation event
+		return Long.MAX_VALUE;
 	}
 
 	// Corresponds to departure event, null dest --> broadcast
 	public void deliver(Packet p, Host dest) {
-		// TODO: Consider moving delays here (at least propagation)
-		if(dest == null) {
-			for(Host h : getHosts()) {
-				h.recvOn(p,this);
-			}
+		// Should never be called - callbacks occur within SimplexLink
+	/*
+		SimplexLink link = getLinkByDest(dest);
+		if(link != null) {
+			link.deliver(p);
 		} else {
-			dest.recvOn(p,this);
+			SimLogger.logDrop(p,this);
 		}
-
-		// TODO: Consider adding NoRegisteredSchedulerException vs null-check
-		if(queueSize() > 0 && mSched != null) {
-			Long callbackTime = mCallbackTimes.remove(p);
-			if(callbackTime != null) {
-				SimEvent e = new SimEvent(SchedulableType.DELIVERY,this,callbackTime.longValue());
-				mSched.addEvent(e);
-			}
-		}
+	*/
 	}
 
 	// Corresponds to arrival event
 	public void recvFrom(Packet p, Host src) {
 		// TODO: Consider adding NoRegisteredSchedulerException vs null-check
 		if(mSched == null) {
-				SimLogger.logDrop(p,this,mSched.getGlobalSimTime());
+				SimLogger.logDrop(p,this);
 				return;
 		}
 
-		boolean successfulQueue = enqueueEvent(p);
-		if(successfulQueue) { // always succeeds for SimpleLink; included for easy extension
-			// TODO: Don't like floor (vs rounded) division; should be fine at microsecond resolution
-			long transmitDelay = (p.size()*1000000)/mBandwidth;
-			if(GlobalSimSettings.LogDelays) {
-				PacketDelays pd = p.getDelays();
-				pd.logTransmissionDelay(transmitDelay);
-				pd.logPropagationDelay(mLatency);
-			}
-
-			long tempTimestamp = mSched.getGlobalSimTime() + transmitDelay;
-			mLinkClearTimes.put(new Integer(src.getId()),new Long(tempTimestamp));
-			tempTimestamp += mLatency;
-			if(queueSize() == 1) {
-				SimEvent e = new SimEvent(SchedulableType.DELIVERY,this,tempTimestamp);
-				mSched.addEvent(e);
-			} else {
-				mCallbackTimes.put(p,new Long(tempTimestamp));
-			}
-		}
+		SimplexLink link = getLinkBySource(src);
+		link.recvFrom(p,src);
 	}
 
 	// from Interface ISchedulerSource
 	public void schedCallback(SchedulableType type) {
-		// Perform action when queued event is selected in the scheduler
+		// Scheduler events should callback to the SimplexLinks, not this class!
 		switch(type) {
-			case DELIVERY: {
-				Packet p = (Packet)dequeueEvent();
-				deliver((Packet)p,null); // SimpleLink just broadcasts
-				break;
-			}
-
 			default: {
 				SimLogger.logEventLoss(SchedulableType.INVALID,this);
 				break;
@@ -102,4 +100,28 @@ public class SimpleLink extends Link {
 		}
 	}
 
+	@Override
+	protected boolean enqueueEvent(ISchedulable event) {
+		// Don't directly enqueue to this structure, but to its SimplexLinks
+		return false;
+	}
+
+	@Override
+	protected ISchedulable dequeueEvent() {
+		// Don't directly dequeue from this structure
+		return null;
+	}
+
+	@Override
+	public int queueSize() {
+		// TODO: this is a somewhat invalid measure
+		return mAtoB.queueSize() + mBtoA.queueSize();
+	}
+
+	@Override
+	public void registerScheduler(SimScheduler sched) {
+		super.registerScheduler(sched);
+		mAtoB.registerScheduler(sched);
+		mBtoA.registerScheduler(sched);
+	}
 }

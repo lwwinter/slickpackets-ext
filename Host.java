@@ -72,9 +72,7 @@ public abstract class Host implements ISchedulerSource {
 
 	public void linkNotEnabledHandler(Packet p) {
 		// Default behavior: drop packet; can @Override in subclasses
-		if(mSched != null) {
-			SimLogger.logDrop(p,this,mSched.getGlobalSimTime());
-		}
+		SimLogger.logDrop(p,this);
 	}
 
 	// from Interface ISchedulerSource

@@ -15,8 +15,14 @@ public class SimLogger {
 	}
 
 	// Currently prints information to stdout
-	public static void logDrop(Packet p, ISchedulerSource dropPoint, long timestamp) {
+	public static void logDrop(Packet p, ISchedulerSource dropPoint) {
 		if(GlobalSimSettings.LogDrops) {
+			long timestamp = -1;
+			SimScheduler sched = dropPoint.getScheduler();
+			if(sched != null) {
+				timestamp = sched.getGlobalSimTime();
+			}
+
 			System.out.println("Drop: @ " + dropPoint.getId() +", simTime = " + timestamp);
 			logDelays(p);
 		}

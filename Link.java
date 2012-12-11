@@ -46,11 +46,11 @@ public abstract class Link implements ISchedulerSource {
 	}
 
 	// returns true if enqueue succeeded, false otherwise (ie packet drop)
-	public boolean enqueueEvent(ISchedulable event) {
+	protected boolean enqueueEvent(ISchedulable event) {
 		return mQueue.enqueue(event);
 	}
 
-	public ISchedulable dequeueEvent() {
+	protected ISchedulable dequeueEvent() {
 		return mQueue.dequeue();
 	}
 

@@ -68,7 +68,7 @@ public class Router extends Host {
 	public void recvOn(Packet p, Link ingress) {
 		// attempt to receive packet and add to queue
 		if(mSched == null) {
-			SimLogger.logDrop(p,this,mSched.getGlobalSimTime());
+			SimLogger.logDrop(p,this);
 			return;
 		}
 
@@ -82,7 +82,7 @@ public class Router extends Host {
 				mSched.addEvent(e);
 			}
 		} else { // queue is full, drop packet
-			SimLogger.logDrop(p,this,mSched.getGlobalSimTime());
+			SimLogger.logDrop(p,this);
 		}
 	}
 
