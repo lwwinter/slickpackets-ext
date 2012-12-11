@@ -2,6 +2,7 @@
 
 import java.util.PriorityQueue;
 import java.util.Comparator;
+import java.lang.Long;
 
 public class SimScheduler {
 	// CONSTANTS
@@ -28,7 +29,12 @@ public class SimScheduler {
 
 	public void run(long duration) {
 		SimEvent e;
-		long simEndTime = mSimStartTime + duration;
+		long simEndTime;
+		if(duration < 0) {
+			simEndTime = Long.MAX_VALUE;
+		} else {
+			simEndTime = mSimStartTime + duration;
+		}
 		while(mSchedule.size() > 0) {
 			e = mSchedule.poll();
 			if(e != null) {
