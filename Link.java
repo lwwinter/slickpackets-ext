@@ -9,16 +9,22 @@ public abstract class Link implements ISchedulerSource {
 	protected String mId;
 
 	protected IQScheme mQueue;
-	private Host[] mHosts;
+	//private Host[] mHosts;
+	private ArrayList<Host> mHosts;
 	protected boolean mEnabled; // false = failed/disabled
 	protected SimScheduler mSched;
 
 	public Link(IQScheme qscheme, ArrayList<Host> hosts) {
 		mQueue = qscheme;
-		mHosts = hosts.toArray(mHosts);
+		//mHosts = hosts.toArray(mHosts);
 		mLinkId = gLinkId++;
 		mId = "Link#" + mLinkId;
 		mSched = null;
+		if(hosts == null) {
+			mHosts = new ArrayList<Host>(hosts);
+		} else {
+			mHosts = new ArrayList<Host>();
+		}
 	}
 
 	// Corresponds to departure event
@@ -42,7 +48,9 @@ public abstract class Link implements ISchedulerSource {
 	}
 
 	public Host[] getHosts() {
-		return mHosts;
+		//return mHosts;
+		Host[] temp = new Host[0];
+		return mHosts.toArray(temp);
 	}
 
 	// returns true if enqueue succeeded, false otherwise (ie packet drop)
