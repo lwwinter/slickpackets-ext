@@ -37,9 +37,9 @@ public class SimLogger {
 	}
 	
 	// Prints to stdout
-	public static void logEventArrival(SchedulableType type, ISchedulerSource endHost) {
+	public static void logEventArrival(Packet p, ISchedulerSource endHost) {
 		if(GlobalSimSettings.LogEventArrive) {
-			System.out.println("EventArrive: type = " + type + " arrive at " +
+			System.out.println("EventArrive: event groupID= " + p.mEventGroupId + " arrive at " +
 					endHost.getId());
 		}
 	}

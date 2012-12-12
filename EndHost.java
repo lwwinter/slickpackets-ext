@@ -39,7 +39,7 @@ public class EndHost extends Host {
 			// get first link
 			Link link = forward(p);
 			if(link == null) {
-				SimLogger.logEventLoss(type,this);
+				SimLogger.logDrop(p,this);
 				return;
 			}
 			sendOn(p,link);
