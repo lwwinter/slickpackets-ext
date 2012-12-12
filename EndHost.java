@@ -34,7 +34,20 @@ public class EndHost extends Host {
 
 	// Corresponds to arrival event
 	public void recvOn(Packet p, Link ingress) {
-		// TODO: attempt to receive packet and add to queue
+		//attempt to receive packet and add to queue
+		if(ingress==null){	// trigger endhost to send a packet
+			// get first link
+			Link link = forward(p);
+			if(link == null) {
+				SimLogger.logEventLoss(type,this);
+				return;
+			}
+			sendOn(p,link);
+		}
+		else{				// receive packet
+			SimLogger.logEventArrival(p,this);
+		}
+		
 	}
 
 	@Override
