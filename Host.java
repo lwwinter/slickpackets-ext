@@ -24,7 +24,7 @@ public abstract class Host implements ISchedulerSource {
 		mHostId = gHostId++;
 		mId = "Host#" + mHostId;
 		mSched = null;
-		if(links == null) {
+		if(links != null) {
 			mLinks = new ArrayList<Link>(links);
 		} else {
 			mLinks = new ArrayList<Link>();

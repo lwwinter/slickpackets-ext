@@ -3,5 +3,7 @@
 public enum SchedulableType {
 	INVALID,
 	DEPARTURE,
-	DELIVERY
+	DELIVERY,
+	HOST_SEND,
+	LINK_FAIL
 }

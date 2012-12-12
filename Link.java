@@ -20,7 +20,7 @@ public abstract class Link implements ISchedulerSource {
 		mLinkId = gLinkId++;
 		mId = "Link#" + mLinkId;
 		mSched = null;
-		if(hosts == null) {
+		if(hosts != null) {
 			mHosts = new ArrayList<Host>(hosts);
 		} else {
 			mHosts = new ArrayList<Host>();

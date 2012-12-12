@@ -1,14 +1,20 @@
 //package org.timecrunch;
 
+import java.util.LinkedList;
+
+// Extend Packet as needed (generally needs corresponding PacketHeader)
 public class Packet implements ISchedulable {
-	// TODO: Header values as needed
-	// TODO: Will probably extend as needed
+	// CONSTANTS
+	protected static final int DEFAULT_EVENT_GROUP_ID = 0;
+
+	// MEMBERS
+	LinkedList<PacketHeader> mHeader; // Linked-list of PacketHeaders for easy encapsulation
 	int mEventGroupId;
 	int mPayloadSize;
 	protected PacketDelays mPacketDelays;
 
 	public Packet(int payload) {
-		this(payload,0);
+		this(payload,DEFAULT_EVENT_GROUP_ID);
 	}
 
 	public Packet(int payload, int egid) {
@@ -19,6 +25,8 @@ public class Packet implements ISchedulable {
 		} else {
 			mPacketDelays = null;
 		}
+		mHeader = new LinkedList<PacketHeader>();
+		mHeader.add(new PacketHeader(PacketType.NO_TYPE));
 	}
 
 	// copy constructor
@@ -46,5 +54,21 @@ public class Packet implements ISchedulable {
 
 	public PacketDelays getDelays() {
 		return mPacketDelays;
+	}
+
+	public PacketType getType() {
+		return mHeader.getLast().getType();
+	}
+
+	public PacketHeader getHeader() {
+		return mHeader.getLast();
+	}
+
+	public PacketHeader decapsulate() {
+		if(mHeader.size() > 1) {
+			return mHeader.removeLast();
+		}
+
+		return null;
 	}
 }

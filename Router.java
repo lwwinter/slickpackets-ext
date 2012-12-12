@@ -12,6 +12,7 @@ public class Router extends Host {
 		super(new FifoQScheme(qsize),links);
 		mThroughput = throughput;
 		mArrivalTimes = new HashMap<Packet,Long>();
+		mBitUsProcessed = 0;
 	}
 
 	public int queueCapacity() {
