@@ -45,7 +45,7 @@ public class SimTest2 {
 		SendAtRateBehavior b1 = new SendAtRateBehavior(sender,receiver,10000,1000,
 				PacketType.NO_TYPE,0,2000000);
 		// link between routers fails after 1 second
-		//LinkFailureBehavior b2 = new LinkFailureBehavior(r1ToR2,1000000);
+		LinkFailureBehavior b2 = new LinkFailureBehavior(r1ToR2,1000000);
 
 		// Add Links to Hosts
 		sender.addLink(senderToR1);
@@ -66,9 +66,11 @@ public class SimTest2 {
 		s.addLink(r2ToReceiver);
 
 		s.addBehavior(b1);
-		//s.addBehavior(b2);
+		s.addBehavior(b2);
 
 		s.registerMembersForScheduling();
+
+		GlobalSimSettings.LogDrops = true;
 
 		s.start();
 	}

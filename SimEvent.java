@@ -23,4 +23,12 @@ public class SimEvent {
 	public long getTriggerTime() {
 		return mTriggerTime;
 	}
+
+	public String getSourceId() {
+		return mSource.getId();
+	}
+
+	public SchedulableType getType() {
+		return mType;
+	}
 }

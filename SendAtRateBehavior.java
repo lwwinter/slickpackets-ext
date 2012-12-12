@@ -75,9 +75,8 @@ public class SendAtRateBehavior extends Behavior {
 		getTargetHost().recvOn(p,null);
 
 		// queue next packet
-		long now = mSched.getGlobalSimTime();
-		long nextSend = now + getSendingDelay(mPacketSize);
-		if(nextSend < now + mDuration) {
+		long nextSend = mSched.getGlobalSimTime() + getSendingDelay(mPacketSize);
+		if(nextSend < mStartTime + mDuration) {
 			SimEvent e = new SimEvent(SchedulableType.HOST_SEND,this,nextSend);
 			mSched.addEvent(e);
 		}

@@ -43,8 +43,8 @@ public class SimScheduler {
 
 			e = mSchedule.peek();
 			if(e != null) {
-				mSimTime = e.mTriggerTime;
-				System.out.println("Current SimTime: " + mSimTime); // DEBUG
+				mSimTime = e.getTriggerTime();
+				//System.out.println("Current SimTime: " + mSimTime); // DEBUG
 			}
 
 			// TODO: handle long wraparound safely
@@ -60,6 +60,7 @@ public class SimScheduler {
 		 * However, only 1 event at a time will ever be scheduled from hosts/links/etc
 		 * and queueing schemes for these have been selected to avoid this problem. */
 		mSchedule.add(e);
+		//System.out.println("SimEvent: Added " + e.getType() + " from " + e.getSourceId() + "; triggerTime = " + e.getTriggerTime()); // DEBUG
 	}
 
 	public long getGlobalSimTime() {
