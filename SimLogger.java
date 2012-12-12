@@ -35,4 +35,13 @@ public class SimLogger {
 					lossPoint.getId());
 		}
 	}
+	
+	// Prints to stdout
+	public static void logEventArrival(Packet p, ISchedulerSource endHost) {
+		if(GlobalSimSettings.LogEventArrive) {
+			System.out.println("EventArrive: event groupID= " + p.mEventGroupId + " arrive at " +
+					endHost.getId());
+		}
+	}
+	
 }
