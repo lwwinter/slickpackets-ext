@@ -63,6 +63,15 @@ public class Router extends Host {
 		}
 		
 		egress.recvFrom(p,this);
+
+		// Queue next callback to the global scheduler (packet stays in local queue)
+		// TODO: Consider adding NoRegisteredSchedulerException vs null-check
+		if(queueSize() > 0 && mSched != null) {
+			Packet pNext = (Packet)mQueue.peek();
+			SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,mSched.getGlobalSimTime() +
+					getProcessingDelay(pNext));
+			mSched.addEvent(e);
+		}
 	}
 
 	// Corresponds to arrival event

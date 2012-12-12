@@ -109,6 +109,8 @@ public abstract class Host implements ISchedulerSource {
 				break;
 			}
 		}
+
+		
 	}
 
 	public void registerScheduler(SimScheduler sched) {

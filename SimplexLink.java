@@ -60,6 +60,7 @@ public class SimplexLink extends Link {
 		// TODO: Consider moving delays here (at least propagation)
 		mDstHost.recvOn(p,this);
 
+		// Queue next callback to the global scheduler (packet stays in local queue)
 		// TODO: Consider adding NoRegisteredSchedulerException vs null-check
 		if(queueSize() > 0 && mSched != null) {
 			Long callbackTime = mCallbackTimes.remove(p);
