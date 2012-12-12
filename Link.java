@@ -11,7 +11,7 @@ public abstract class Link implements ISchedulerSource {
 	protected IQScheme mQueue;
 	//private Host[] mHosts;
 	private ArrayList<Host> mHosts;
-	protected boolean mEnabled; // false = failed/disabled
+	protected boolean mEnabled; // false = failed/disabled; true by default
 	protected SimScheduler mSched;
 
 	public Link(IQScheme qscheme, ArrayList<Host> hosts) {
@@ -25,6 +25,7 @@ public abstract class Link implements ISchedulerSource {
 		} else {
 			mHosts = new ArrayList<Host>();
 		}
+		mEnabled = true;
 	}
 
 	// Corresponds to departure event
@@ -39,10 +40,12 @@ public abstract class Link implements ISchedulerSource {
 		return mEnabled;
 	}
 
+	// TODO: Consider dropping any packets on the link on failure
 	public void toggleEnabled() {
 		mEnabled =!mEnabled;
 	}
 
+	// TODO: Consider dropping any packets on the link on failure
 	public void setEnabled(boolean enabled) {
 		mEnabled = enabled;
 	}

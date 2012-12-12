@@ -39,9 +39,15 @@ public class SimLogger {
 	// Prints to stdout
 	public static void logEventArrival(Packet p, ISchedulerSource endHost) {
 		if(GlobalSimSettings.LogEventArrive) {
-			System.out.println("EventArrive: event groupID= " + p.mEventGroupId + " arrive at " +
+			System.out.println("EventArrive: event groupID= " + p.eventGroupId() + " arrived at " +
 					endHost.getId());
 		}
 	}
-	
+
+	// Prints to stdout
+	public static void logTrace(Packet p, ISchedulerSource location) {
+		if(GlobalSimSettings.LogTrace) {
+			System.out.println("Trace: packet with egid=" + p.eventGroupId() + " @ " + location.getId());
+		}
+	}
 }

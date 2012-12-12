@@ -8,6 +8,10 @@ public class Router extends Host {
 	protected HashMap<Packet,Long> mArrivalTimes;
 	private long mBitUsProcessed; // used to model quantized delay even for any throughput
 	
+	public Router(long throughput, int qsize) {
+		this(throughput,qsize,null);
+	}
+
 	public Router(long throughput, int qsize, ArrayList<Link> links) {
 		super(new FifoQScheme(qsize),links);
 		mThroughput = throughput;
@@ -80,6 +84,8 @@ public class Router extends Host {
 		if(mSched == null) {
 			SimLogger.logDrop(p,this);
 			return;
+		} else {
+			SimLogger.logTrace(p,this);
 		}
 
 		boolean successfulQueue = enqueueEvent(p);

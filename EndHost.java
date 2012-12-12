@@ -5,6 +5,10 @@ import java.util.HashMap;
 
 public class EndHost extends Host {
 
+	public EndHost() {
+		this(null);
+	}
+
 	public EndHost(ArrayList<Link> links) {
 		super(new InfFairQScheme(),links);
 	}
@@ -44,6 +48,7 @@ public class EndHost extends Host {
 	// Corresponds to arrival event
 	public void recvOn(Packet p, Link ingress) {
 		//attempt to receive packet and add to queue
+		SimLogger.logTrace(p,this);
 		if(ingress==null){	// trigger endhost to send a packet (queue for departure)
 			// forwarding will be handled by schedCallback's DEPARTURE handler in Host
 			boolean successfulQueue = enqueueEvent(p);

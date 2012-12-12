@@ -83,6 +83,8 @@ public class SimpleLink extends Link {
 		if(mSched == null) {
 				SimLogger.logDrop(p,this);
 				return;
+		} else {
+			SimLogger.logTrace(p,this);
 		}
 
 		SimplexLink link = getLinkBySource(src);

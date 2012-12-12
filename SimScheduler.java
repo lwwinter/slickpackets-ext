@@ -44,6 +44,7 @@ public class SimScheduler {
 			e = mSchedule.peek();
 			if(e != null) {
 				mSimTime = e.mTriggerTime;
+				System.out.println("Current SimTime: " + mSimTime); // DEBUG
 			}
 
 			// TODO: handle long wraparound safely

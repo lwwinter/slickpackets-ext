@@ -19,7 +19,7 @@ public class SlickXMLParser {
 	 */
 	public static void main(String[] args) {
 		try {
-			File f = new File("src\\slick-config.xml");
+			File f = new File("src/slick-config.xml");
 			String path = f.getAbsolutePath();
 			InputStream in = new FileInputStream(path);
 			XMLInputFactory factory = XMLInputFactory.newInstance();
