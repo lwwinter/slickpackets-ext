@@ -1,6 +1,8 @@
 
 
-import org.jgrapht.GraphPath;
+import java.util.ArrayList;
+
+
 import org.jgrapht.alg.DijkstraShortestPath;
 import org.jgrapht.graph.*;
 
@@ -11,39 +13,40 @@ public class NetworkGraph {
 	private NetworkConfig networkConfig ;
 	private SimpleWeightedGraph<Host,Link> graph ; 
 	
+	
+	
 	public NetworkGraph(NetworkConfig n){
 		networkConfig = n ;
 		graph = new SimpleWeightedGraph<Host,Link>(Link.class) ;
 		buildGraph();
+		//System.out.println(graph.toString());
 	}
 	
 	private void buildGraph(){
 		
-		Host[] hosts = (Host[]) networkConfig.getRoutersMap().values().toArray() ;
+		ArrayList<Host> hosts = networkConfig.getHostsList() ;
 		for(Host host: hosts){
 			graph.addVertex(host);
 		}
 		
-		Link[] links = (Link[]) networkConfig.getLinksMap().values().toArray() ;
+		ArrayList<Link> links = networkConfig.getLinkList() ;
 		for(Link link: links){
 			Host[] ends = link.getHosts() ;
 			// assume it's simple link
 			// TODO : support universal link 
 			graph.addEdge(ends[0], ends[1], link);
 			
-			// TODO set links weight
+			// TODO need implement org.jgrapht.graph.DefaultWeightedEdge for Link
 			// graph.setEdgeWeight(link, link.weight);
 		}
 		
 	}
 	
 
-	public GraphPath<Host,Link> getPath(Host source , Host destination){
-		
-		@SuppressWarnings("unchecked")
-		GraphPath<Host,Link> path =  (GraphPath<Host,Link>) DijkstraShortestPath.findPathBetween(graph,source,destination);
-	
-		
+	public ArrayList<Link> getPath(Host source , Host destination){
+
+		ArrayList<Link> path =  (ArrayList<Link>) DijkstraShortestPath.findPathBetween(graph,source,destination);
+
 		return path;
 	}
 	

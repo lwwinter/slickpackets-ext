@@ -13,6 +13,8 @@ public abstract class Link implements ISchedulerSource {
 	private ArrayList<Host> mHosts;
 	protected boolean mEnabled; // false = failed/disabled; true by default
 	protected SimScheduler mSched;
+	
+	protected long weight;
 
 	public Link(IQScheme qscheme, ArrayList<Host> hosts) {
 		mQueue = qscheme;

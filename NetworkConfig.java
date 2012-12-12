@@ -1,25 +1,28 @@
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
 public class NetworkConfig {
 	
-	private HashMap<String, Router> routersMap;
+	private HashMap<String, Host> hostsMap;
 	private HashMap<String, Link> linksMap;
 	private String networkId;
-	
+
 	NetworkConfig(String networkId){
 		this.networkId = networkId;
-		this.routersMap = new HashMap<String, Router>();
+		this.hostsMap = new HashMap<String, Host>();
 		this.linksMap = new HashMap<String, Link>();
 	}
 
-	public HashMap<String, Router> getRoutersMap() {
-		return routersMap;
+	public HashMap<String, Host> getHostsMap() {
+		return hostsMap;
 	}
 
-	public void setRoutersMap(HashMap<String, Router> routersMap) {
-		this.routersMap = routersMap;
+	public void setHostsMap(HashMap<String, Host> hostsMap) {
+		this.hostsMap = hostsMap;
 	}
+
 
 	public HashMap<String, Link> getLinksMap() {
 		return linksMap;
@@ -32,13 +35,30 @@ public class NetworkConfig {
 	public String getNetworkId() {
 		return networkId;
 	}
+	
+	public ArrayList<Host> getHostsList() {
+		ArrayList<Host> list = new ArrayList<Host>(); 
+		list.addAll(hostsMap.values());
+		return list ;
+	}
+	
+	public ArrayList<Link> getLinkList() {
+		ArrayList<Link> list = new ArrayList<Link>(); 
+		list.addAll(linksMap.values());
+		return list ;
+	}
 
 	public void setNetworkId(String networkId) {
 		this.networkId = networkId;
 	}
 	
-	public void addRouter(String key, Router routerObj){
-		this.routersMap.put(key, routerObj);
+	public void addHost(String key, Host hostObj){
+		this.hostsMap.put(key, hostObj);
+		/*
+		for(Host h : hostsMap.values()){
+			System.out.println(h.mId);
+		}
+		*/
 	}
 	
 	public void addLink(String key, Link linkObj){
