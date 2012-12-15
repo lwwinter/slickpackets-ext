@@ -21,6 +21,7 @@ public class SimplexLink extends Link {
 		mDstHost = hosts.get(1);
 		mLinkClearTime = 0;
 		mCallbackTimes = new HashMap<Packet,Long>();
+		weight = mLatency ;
 	}
 
 	public Host getSrcHost() {

@@ -39,12 +39,19 @@ public abstract class Host implements ISchedulerSource {
 
 	// Takes a packet and returns the link to forward on
 	public Link forward(Packet p) {
-		// default fallback behavior - send on first link
-		if(mLinks.size() == 0) {
-			return null;
+		Link link = null ;
+		
+		switch(p.getHeader().getType()) {
+			case SOURCE_ROUTED:
+				SourceRoutedPacketHeader header = (SourceRoutedPacketHeader) p.getHeader() ;
+				link = header.getNextLink() ;
+				break;
+			default:
+				if(mLinks.size() != 0)
+					link =  mLinks.get(0);
+				break;
 		}
-
-		return mLinks.get(0);
+		return link ;
 	}
 
 	public Link[] getLinks() {
@@ -95,7 +102,7 @@ public abstract class Host implements ISchedulerSource {
 			case DEPARTURE: {
 				Packet p = (Packet)dequeueEvent();
 				Link link = forward(p);
-				if(link == null) {
+				if(link == null ) {
 					SimLogger.logEventLoss(type,this);
 					return;
 				}

@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 /* SendAtRateBehavior.java
  * Host sends some packet-type of specified size (in bits) to some destination Host at
  * a specified sending rate for the specified duration.
@@ -21,14 +23,16 @@ public class SendAtRateBehavior extends Behavior {
 	protected PacketType mPacketType; // type of packet to instantiate (optional)
 	protected long mDuration; // duration of behavior (optional)
 	private long mBitUsProcessed; // used to model quantized delay for any sending rate
+	protected LinkedList<Link> mPath ;
 
-	public SendAtRateBehavior(Host target, Host dest, int rate) {
-		this(target,dest,rate,DEFAULT_PACKET_SIZE,DEFAULT_PACKET_TYPE,DEFAULT_START_TIME,DEFAULT_DURATION);
+	public SendAtRateBehavior(LinkedList<Link> path, Host target, Host dest, int rate) {
+		this(path,target,dest,rate,DEFAULT_PACKET_SIZE,DEFAULT_PACKET_TYPE,DEFAULT_START_TIME,DEFAULT_DURATION);
 	}
 
-	public SendAtRateBehavior(Host target, Host dest, int rate, int size, PacketType type,
+	public SendAtRateBehavior(LinkedList<Link> path, Host target, Host dest, int rate, int size, PacketType type,
 			long startTime, long duration) {
 		super(target,startTime);
+		mPath = path ;
 		mDest = dest;
 		mSendingRate = rate;
 		mPacketSize = size;
@@ -64,7 +68,10 @@ public class SendAtRateBehavior extends Behavior {
 		Packet p;
 		switch(mPacketType) {
 			case SOURCE_ROUTED:
-				p = new SourceRoutedPacket(mDest,mPacketSize,getBehaviorId());
+				LinkedList<Link> path = new LinkedList<Link>() ; 
+				for(Link l : mPath)
+					path.add(l);
+				p = new SourceRoutedPacket(path,mDest,mPacketSize,getBehaviorId());
 				break;
 			default:
 				p = new Packet(mPacketSize,getBehaviorId());

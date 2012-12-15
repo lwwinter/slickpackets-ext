@@ -1,6 +1,7 @@
 //package org.timecrunch;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class SimTest2 {
 
@@ -42,7 +43,8 @@ public class SimTest2 {
 
 		// 2 behaviors
 		// sender sends 1 kbit dummy packets at 10 kbps for 2 seconds
-		SendAtRateBehavior b1 = new SendAtRateBehavior(sender,receiver,10000,1000,
+		LinkedList<Link> path = new LinkedList<Link>();
+		SendAtRateBehavior b1 = new SendAtRateBehavior(path,sender,receiver,10000,1000,
 				PacketType.NO_TYPE,0,2000000);
 		// link between routers fails after 1 second
 		LinkFailureBehavior b2 = new LinkFailureBehavior(r1ToR2,1000000);
@@ -71,6 +73,7 @@ public class SimTest2 {
 		s.registerMembersForScheduling();
 
 		GlobalSimSettings.LogDrops = true;
+		//GlobalSimSettings.LogTrace = true ;
 
 		s.start();
 	}

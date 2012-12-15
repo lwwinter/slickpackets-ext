@@ -1,21 +1,23 @@
 <slick-packets>
 	<network id="TestSlick">
 		<hosts-list>
-			<host id="RTR1" type="router" queue-size="10" throughput="20"/>
-			<host id="RTR2" type="router" queue-size="15" throughput="10"/>
-			<host id="RTR3" type="router" queue-size="40" throughput="40"/>
-			<host id="RTR4" type="router" queue-size="45" throughput="50"/>
-			<host id="END1" type="endhost"/>
-			<host id="END2" type="endhost"/>
+			<host id="RTR1" type="router" queue-size="50" throughput="10000000"/>
+			<host id="RTR2" type="router" queue-size="25" throughput="5000000"/>
+			<host id="RTR3" type="router" queue-size="50" throughput="10000000"/>
+			<host id="RTR4" type="router" queue-size="25" throughput="5000000"/>
+			<host id="RTR5" type="router" queue-size="25" throughput="5000000"/>
+			<host id="SRC"  type="endhost"/>
+			<host id="DST"  type="endhost"/>
 		</hosts-list>
 		<links-list>
-			<link id="LNK1" type="SimpleLink" bandwidth="100" latency="10" from="RTR1" to="RTR2" />
-			<link id="LNK2" type="SimpleLink" bandwidth="100" latency="20" from="RTR1" to="RTR3" />
-			<link id="LNK3" type="SimpleLink" bandwidth="100" latency="50" from="RTR1" to="RTR4" />
-			<link id="LNK4" type="SimpleLink" bandwidth="100" latency="10" from="RTR2" to="RTR4" />
-			<link id="LNK5" type="SimpleLink" bandwidth="100" latency="50" from="RTR3" to="RTR4" />
-			<link id="LNK6" type="SimpleLink" bandwidth="100" latency="10" from="END1" to="RTR4" />
-			<link id="LNK7" type="SimpleLink" bandwidth="100" latency="10" from="END2" to="RTR3" />
+			<link id="LNK1" type="SimpleLink" bandwidth="5000000" latency="10000" from="SRC"  to="RTR1" />
+			<link id="LNK2" type="SimpleLink" bandwidth="5000000" latency="10000" from="RTR1" to="RTR2" />
+			<link id="LNK3" type="SimpleLink" bandwidth="5000000" latency="10000" from="RTR2" to="RTR3" />
+			<link id="LNK4" type="SimpleLink" bandwidth="5000000" latency="10000" from="RTR3" to="DST"  />
+			<link id="LNK5" type="SimpleLink" bandwidth="2500000" latency="20000" from="RTR1" to="RTR4" />
+			<link id="LNK6" type="SimpleLink" bandwidth="2500000" latency="20000" from="RTR4" to="DST"  />
+			<link id="LNK7" type="SimpleLink" bandwidth="2500000" latency="20000" from="RTR2" to="RTR5" />
+			<link id="LNK8" type="SimpleLink" bandwidth="2500000" latency="20000" from="RTR5" to="DST"  />
 		</links-list>
 	</network>
 </slick-packets>

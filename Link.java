@@ -1,8 +1,11 @@
 //package org.timecrunch;
 
 import java.util.ArrayList;
+import org.jgrapht.graph.DefaultWeightedEdge ;
 
-public abstract class Link implements ISchedulerSource {
+public abstract class Link extends DefaultWeightedEdge implements ISchedulerSource {
+
+	private static final long serialVersionUID = 1L;
 	// may want to implement unique link id differently (or not at all) - may be useful though
 	private static int gLinkId = 0;
 	private int mLinkId;
@@ -28,6 +31,7 @@ public abstract class Link implements ISchedulerSource {
 			mHosts = new ArrayList<Host>();
 		}
 		mEnabled = true;
+		weight = 1 ;
 	}
 
 	// Corresponds to departure event

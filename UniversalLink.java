@@ -29,6 +29,7 @@ public class UniversalLink extends Link {
 		mLatency = latency;
 		mLinkClearTimes = new HashMap<Integer,Long>();
 		mCallbackTimes = new HashMap<Packet,Long>();
+		weight = mLatency ;
 	}
 
 	public long getDelayUntilFree(Host src) {

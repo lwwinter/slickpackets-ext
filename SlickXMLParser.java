@@ -15,41 +15,34 @@ public class SlickXMLParser {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	private final static String defaultPath = "src\\slick-config.xml" ;
+	private NetworkConfig networkConfig ;
+	
+	public SlickXMLParser() {
+		this(defaultPath);
+	}
+	
+	public SlickXMLParser(String xmlPath) {
 		try {
-			File f = new File("src\\slick-config.xml");
-			//File f = new File("slick-config.xml");
+			File f = new File(xmlPath);
 			String path = f.getAbsolutePath();
 			InputStream in = new FileInputStream(path);
 			XMLInputFactory factory = XMLInputFactory.newInstance();
 			XMLStreamReader parser = factory.createXMLStreamReader(in);
-			NetworkConfig networkConfig = new NetworkConfig("DEFAULT_NETWORK");
+			networkConfig = new NetworkConfig("DEFAULT_NETWORK");
 			while (parser.hasNext()) {
-
 		        printEventInfo(parser, networkConfig);
-
 		    }
 		    parser.close();
-		    
-		    NetworkGraph networkGraph = new NetworkGraph(networkConfig);
-		    ArrayList<Link> p= networkGraph.getPath(networkConfig.getHostsMap().get("END1"), networkConfig.getHostsMap().get("END2")) ;
-		    for(Link l :p){
-		    	System.out.print(l.mId+"=>");
-		    	
-		    }
 		    
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		
-		
-		
-		
 	}
 	
-	private static void printEventInfo(XMLStreamReader reader, NetworkConfig networkConfig) throws Exception {
+	private void printEventInfo(XMLStreamReader reader, NetworkConfig networkConfig) throws Exception {
 		int eventCode = reader.next();
 		Router router = null;
 		EndHost endHost = null ;
@@ -57,7 +50,7 @@ public class SlickXMLParser {
 	    switch (eventCode) {
 	    	case XMLStreamConstants.START_ELEMENT :
 	    		//System.out.println("event = START_ELEMENT");
-	    		System.out.println("Localname = "+reader.getLocalName());
+	    		//System.out.println("Localname = "+reader.getLocalName());
 	    		if(reader.getLocalName().equalsIgnoreCase("network")){
 	    			String netId = reader.getAttributeValue(null, "id");
 	    			networkConfig.setNetworkId(netId);
@@ -105,6 +98,10 @@ public class SlickXMLParser {
 	    		System.out.println("PIData = " + reader.getAttributeLocalName(0));
 	    		break;*/
 	    }
+	}
+	
+	public NetworkConfig getNetworkConfig(){
+		return networkConfig;
 	}
 	
 }

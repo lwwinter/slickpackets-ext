@@ -1,6 +1,7 @@
 
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 
 import org.jgrapht.alg.DijkstraShortestPath;
@@ -37,16 +38,20 @@ public class NetworkGraph {
 			graph.addEdge(ends[0], ends[1], link);
 			
 			// TODO need implement org.jgrapht.graph.DefaultWeightedEdge for Link
-			// graph.setEdgeWeight(link, link.weight);
+			graph.setEdgeWeight(link, link.weight);
 		}
 		
 	}
 	
 
-	public ArrayList<Link> getPath(Host source , Host destination){
+	public LinkedList<Link> getPath(Host source , Host destination){
 
-		ArrayList<Link> path =  (ArrayList<Link>) DijkstraShortestPath.findPathBetween(graph,source,destination);
-
+		ArrayList<Link> p =  (ArrayList<Link>) DijkstraShortestPath.findPathBetween(graph,source,destination);
+		LinkedList<Link> path = new LinkedList<Link>();
+		for(Link l : p ){
+			path.add(l);
+		}
+		
 		return path;
 	}
 	

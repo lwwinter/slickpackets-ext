@@ -1,7 +1,6 @@
 //package org.timecrunch;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class EndHost extends Host {
 

@@ -5,7 +5,6 @@
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.lang.Long;
 
 public class SimpleLink extends Link {
@@ -24,6 +23,7 @@ public class SimpleLink extends Link {
 		rev.add(hosts.get(1));
 		rev.add(hosts.get(0));
 		mBtoA = new SimplexLink(bandwidth,latency,rev);
+		weight = mLatency ;
 	}
 
 	private SimplexLink getLinkBySource(Host src) {
