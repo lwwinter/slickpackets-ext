@@ -15,7 +15,8 @@ public class SlickXMLParser {
 	/**
 	 * @param args
 	 */
-	private final static String defaultPath = "src\\slick-config.xml" ;
+    // File.separator used for platform independence, '/' supposed to work cross-platform too
+	private final static String defaultPath = "src"+File.separator+"slick-config.xml" ;
 	private NetworkConfig networkConfig ;
 	
 	public SlickXMLParser() {

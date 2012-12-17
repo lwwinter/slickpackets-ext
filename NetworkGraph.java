@@ -35,10 +35,12 @@ public class NetworkGraph {
 			Host[] ends = link.getHosts() ;
 			// assume it's simple link
 			// TODO : support universal link 
-			graph.addEdge(ends[0], ends[1], link);
-			
-			// TODO need implement org.jgrapht.graph.DefaultWeightedEdge for Link
-			graph.setEdgeWeight(link, link.weight);
+			if(ends.length == 2) {
+				graph.addEdge(ends[0], ends[1], link);
+
+				// TODO need implement org.jgrapht.graph.DefaultWeightedEdge for Link
+				graph.setEdgeWeight(link, link.weight);
+			}
 		}
 		
 	}
