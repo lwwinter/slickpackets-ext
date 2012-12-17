@@ -38,13 +38,9 @@ public class SimScheduler {
 		while(mSchedule.size() > 0) {
 			e = mSchedule.poll();
 			if(e != null) {
-				e.callback();
-			}
-
-			e = mSchedule.peek();
-			if(e != null) {
 				mSimTime = e.getTriggerTime();
 				//System.out.println("Current SimTime: " + mSimTime); // DEBUG
+				e.callback();
 			}
 
 			// TODO: handle long wraparound safely
