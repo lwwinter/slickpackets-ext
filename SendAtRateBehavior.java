@@ -65,6 +65,9 @@ public class SendAtRateBehavior extends Behavior {
 		// Create packet
 		Packet p;
 		switch(mPacketType) {
+			case SLICK_PACKET:
+				p = new SlickPacket(mDest,mPacketSize,null,null,getBehaviorId());
+				break;
 			case SOURCE_ROUTED:
 				// destination set via constructor vs setDest()
 				p = new SourceRoutedPacket(mDest,mPacketSize,null,getBehaviorId());

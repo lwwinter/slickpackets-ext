@@ -7,15 +7,21 @@ import java.util.LinkedList;
 public class EndHost extends Host {
 	private class RouteCacheEntry {
 		public LinkedList<Link> path;
+		public ArrayList<LinkedList<Link>> failovers;
 		public boolean stale;
 		public Packet mDelayedPacket;
 
 		public RouteCacheEntry() {
-			this(null);
+			this(null,null);
 		}
 
 		public RouteCacheEntry(LinkedList<Link> path) {
+			this(path,null);
+		}
+
+		public RouteCacheEntry(LinkedList<Link> path, ArrayList<LinkedList<Link>> failovers) {
 			this.path = path;
+			this.failovers = failovers;
 			this.stale = false;
 		}
 	}
@@ -90,36 +96,69 @@ public class EndHost extends Host {
 		Link link = null ;
 
 		switch(p.getType()) {
-			case SOURCE_ROUTED: {
-				LinkedList<Link> path;
-				NetworkGraph ng = mSched.getNetworkGraph();
-				SourceRoutedPacketHeader header = (SourceRoutedPacketHeader)p.getHeader();
-				Host dest = p.getDest();
-				if(ng != null && dest != null) {
-					RouteCacheEntry rce = mRouteCache.get(dest);
-					if(rce == null || rce.stale || rce.path == null) {
-						path = ng.getPath(this,dest);
-						rce = new RouteCacheEntry(path);
-						mRouteCache.put(dest,rce);
-					} else {
-						path = rce.path;
-					}
-
-					// copy path and set in header
-					// TODO: should be safe (and faster) to not copy - check
-					header.setNewPath(new LinkedList<Link>(path));
-				}
-
-				// else no destination or no access to NetworkGraph - returns null
-				link = header.getNextLink();
+			case SLICK_PACKET:
+				link = slickPacketHandler(p);
 				break;
-			}
+			case SOURCE_ROUTED:
+				link = sourceRoutedPacketHandler(p);
+				break;
 			default:
 				link = super.forward(p);
 				break;
 		}
 
 		return link;
+	}
+
+	private Link sourceRoutedPacketHandler(Packet p) {
+		LinkedList<Link> path;
+		NetworkGraph ng = mSched.getNetworkGraph();
+		SourceRoutedPacketHeader header = (SourceRoutedPacketHeader)p.getHeader();
+		Host dest = p.getDest();
+		if(ng != null && dest != null) {
+			RouteCacheEntry rce = mRouteCache.get(dest);
+			if(rce == null || rce.stale || rce.path == null) {
+				path = ng.getPath(this,dest);
+				rce = new RouteCacheEntry(path);
+				mRouteCache.put(dest,rce);
+			} else {
+				path = rce.path;
+			}
+
+			// copy path and set in header
+			// TODO: should be safe (and faster) to not copy - check
+			header.setNewPath(new LinkedList<Link>(path));
+		}
+
+		// else no destination or no access to NetworkGraph - returns null
+		return header.getNextLink();
+	}
+
+	private Link slickPacketHandler(Packet p) {
+		LinkedList<Link> path;
+		ArrayList<LinkedList<Link>> failovers;
+		NetworkGraph ng = mSched.getNetworkGraph();
+		SlickPacketHeader header = (SlickPacketHeader)p.getHeader();
+		Host dest = p.getDest();
+		if(ng != null && dest != null) {
+			RouteCacheEntry rce = mRouteCache.get(dest);
+			if(rce == null || rce.stale || rce.path == null || rce.failovers == null) {
+				path = ng.getPath(this,dest);
+				failovers = ng.computeFailovers(path,this,dest);
+				rce = new RouteCacheEntry(path,failovers);
+				mRouteCache.put(dest,rce);
+			} else {
+				path = rce.path;
+				failovers = rce.failovers;
+			}
+
+			// copy path and set in header
+			// TODO: should be safe (and faster) to not copy - check
+			header.setNewPath(new LinkedList<Link>(path),failovers);
+		}
+
+		// else no destination or no access to NetworkGraph - returns null
+		return header.getNextLink();
 	}
 
 	//public void schedCallback(SchedulableType type); // handled in superclass (Host)

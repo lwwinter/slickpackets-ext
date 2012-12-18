@@ -1,6 +1,7 @@
 //package org.timecrunch;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public abstract class Host implements ISchedulerSource {
 	// may want to implement unique host id differently (or not at all) - may be useful though
@@ -94,8 +95,32 @@ public abstract class Host implements ISchedulerSource {
 	}
 
 	public void linkNotEnabledHandler(Packet p) {
-		// Default behavior: drop packet; can @Override in subclasses
-		SimLogger.logDrop(p,this);
+		switch(p.getType()) {
+			case SLICK_PACKET:
+				slickPacketFailureHandler(p);
+				break;
+			default:
+				// Default behavior: drop packet; can @Override in subclasses or add handlers here
+				SimLogger.logDrop(p,this);
+				break;
+		}
+	}
+
+	private void slickPacketFailureHandler(Packet p) {
+		SlickPacketHeader spHeader = (SlickPacketHeader)p.getHeader();
+		LinkedList<Link> altPath = spHeader.getFailover();
+		if(altPath == null) {
+			SimLogger.logDrop(p,this);
+			return;
+		}
+
+		// set header's path to alternate path
+		spHeader.setNewPath(altPath,null);
+
+		// reschedule for immediate departure (now)
+		SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,mSched.getGlobalSimTime());
+		mSched.addEvent(e);
+		mDelayedEvent = p; // save packet for next callback (since it was dequeued)
 	}
 
 	// from Interface ISchedulerSource

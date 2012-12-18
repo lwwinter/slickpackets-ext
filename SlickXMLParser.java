@@ -103,6 +103,8 @@ public class SlickXMLParser {
 								ptype = PacketType.NO_TYPE;
 							} else if(type.equalsIgnoreCase("source-routed")) {
 								ptype = PacketType.SOURCE_ROUTED;
+							} else if(type.equalsIgnoreCase("slick-packet")) {
+								ptype = PacketType.SLICK_PACKET;
 							} else {
 								if(GlobalSimSettings.LogWarnings) {
 									SimLogger.logWarning("Invalid packet type for SendAtRateBehavior");
@@ -125,6 +127,29 @@ public class SlickXMLParser {
 						LinkFailureBehavior lfb = new LinkFailureBehavior(tlink,start);
 						lfb.setId(reader.getAttributeValue(null, "id"));
 		    			networkConfig.addBehavior(lfb.getId(),(Behavior)lfb);
+					}
+				}else if(reader.getLocalName().equalsIgnoreCase("global")){
+					if("LogDelays".equalsIgnoreCase(reader.getAttributeValue(null, "name"))){
+						boolean pref = Boolean.parseBoolean(reader.getAttributeValue(null,"value"));
+						GlobalSimSettings.LogDelays = pref;
+					}else if("LogDrops".equalsIgnoreCase(reader.getAttributeValue(null, "name"))){
+						boolean pref = Boolean.parseBoolean(reader.getAttributeValue(null,"value"));
+						GlobalSimSettings.LogDrops = pref;
+					}else if("LogErrors".equalsIgnoreCase(reader.getAttributeValue(null, "name"))){
+						boolean pref = Boolean.parseBoolean(reader.getAttributeValue(null,"value"));
+						GlobalSimSettings.LogErrors = pref;
+					}else if("LogEventLoss".equalsIgnoreCase(reader.getAttributeValue(null, "name"))){
+						boolean pref = Boolean.parseBoolean(reader.getAttributeValue(null,"value"));
+						GlobalSimSettings.LogEventLoss = pref;
+					}else if("LogEventArrive".equalsIgnoreCase(reader.getAttributeValue(null, "name"))){
+						boolean pref = Boolean.parseBoolean(reader.getAttributeValue(null,"value"));
+						GlobalSimSettings.LogEventArrive = pref;
+					} else if("LogTrace".equalsIgnoreCase(reader.getAttributeValue(null, "name"))){
+						boolean pref = Boolean.parseBoolean(reader.getAttributeValue(null,"value"));
+						GlobalSimSettings.LogTrace = pref;
+					} else if("LogWarnings".equalsIgnoreCase(reader.getAttributeValue(null, "name"))){
+						boolean pref = Boolean.parseBoolean(reader.getAttributeValue(null,"value"));
+						GlobalSimSettings.LogWarnings = pref;
 					}
 				}
 	    		break;

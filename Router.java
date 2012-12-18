@@ -114,10 +114,16 @@ public class Router extends Host {
 		Link link = null ;
 
 		switch(p.getType()) {
-			case SOURCE_ROUTED:
+			case SLICK_PACKET: {
+				SlickPacketHeader header = (SlickPacketHeader) p.getHeader() ;
+				link = header.getNextLink() ;
+				break;
+			}
+			case SOURCE_ROUTED: {
 				SourceRoutedPacketHeader header = (SourceRoutedPacketHeader) p.getHeader() ;
 				link = header.getNextLink() ;
 				break;
+			}
 			default:
 				link = super.forward(p);
 				break;

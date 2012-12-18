@@ -51,11 +51,56 @@ public class NetworkGraph {
 
 		ArrayList<Link> p =  (ArrayList<Link>) DijkstraShortestPath.findPathBetween(graph,source,destination);
 		LinkedList<Link> path = new LinkedList<Link>();
-		for(Link l : p ){
-			path.add(l);
+		if(p != null) {
+			for(Link l : p ){
+				path.add(l);
+			}
 		}
 		
 		return path;
+	}
+
+	public ArrayList<LinkedList<Link>> computeFailovers(LinkedList<Link> path, Host source, Host dest) {
+		Host curHost = source;
+		ArrayList<LinkedList<Link>> failovers = new ArrayList<LinkedList<Link>>();
+		LinkedList<Link> altPath;
+		Host[] ends;
+		for(Link linkToRemove : path) {
+			// temporarily remove link from graph
+			graph.removeEdge(linkToRemove);
+
+			// compute failover path
+			altPath = getPath(curHost,dest);
+			if(altPath.size() == 0) {
+				failovers.add(null); // easier to check for null when there is no alternate path
+			} else {
+				failovers.add(altPath);
+			}
+
+			// restore link to graph
+			ends = linkToRemove.getHosts();
+			graph.addEdge(ends[0],ends[1],linkToRemove);
+
+			// proceed to next node in graph
+			curHost = getConnectedHost(linkToRemove,curHost);
+			if(curHost == null) { // should never happen since we started with a good path
+				break;
+			}
+		}
+
+		return failovers;
+	}
+
+	// this will get complicated for >2 host links, ie ethernet and will probably need to be changed
+	private Host getConnectedHost(Link link, Host source) {
+		Host[] hosts = link.getHosts();
+		for(Host h : hosts) {
+			if(h.getHostId() != source.getHostId()) {
+				return h;
+			}
+		}
+
+		return null;
 	}
 	
 	public void loadNewNetworkConfig(ArrayList<Host> hosts, ArrayList<Link> links) {
