@@ -4,17 +4,31 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class EndHost extends Host {
+public class CAEndHost extends Host {
 	// caches routes for Source-Routing to minimize computation time
 	protected HashMap<Host,RouteCacheEntry> mRouteCache;
+	protected HashMap<Host,CongestionState> mNeighborStates;
 
-	public EndHost() {
+	public CAEndHost() {
 		this(null);
 	}
 
-	public EndHost(ArrayList<Link> links) {
+	public CAEndHost(ArrayList<Link> links) {
 		super(new InfFairQScheme(),links);
 		mRouteCache = new HashMap<Host,RouteCacheEntry>();
+		// initialize neighbors' congestion states
+		mNeighborStates = new HashMap<Host,CongestionState>();
+		if(links != null) {
+			Host[] temp;
+			for(Link l : links) {
+				temp = l.getHosts();
+				for(Host h : temp) {
+					if(h.getHostId() != getHostId()) {
+						mNeighborStates.put(h,CongestionState.NORMAL_LOAD);
+					}
+				}
+			}
+		}
 	}
 
 	// Corresponds to departure event
@@ -64,9 +78,28 @@ public class EndHost extends Host {
 					mSched.addEvent(e);
 				}
 			}
+		} else { // receive packet
+			/* FIXME: GiveStateUpdatesPriority always true at the moment.
+			 * If it's not, we may have to deal with dropping congestion state updates
+			 * due to a full queue, and additional design will likely be needed.
+			 */
+			if(p.getType() == PacketType.CONGESTION_STATE_UPDATE) {
+				CongestionStateUpdate csu = (CongestionStateUpdate)p;
+				mNeighborStates.put(csu.getSender(),csu.getState());
+			} else {
+				SimLogger.logEventArrival(p,this);
+			}
 		}
-		else{				// receive packet
-			SimLogger.logEventArrival(p,this);
+	}
+
+	@Override
+	public void addLink(Link c) {
+		super.addLink(c);
+		Host[] hosts = c.getHosts();
+		for(Host h : hosts) {
+			if(h.getHostId() != getHostId()) {
+				mNeighborStates.put(h,CongestionState.NORMAL_LOAD);
+			}
 		}
 	}
 
@@ -76,7 +109,7 @@ public class EndHost extends Host {
 
 		switch(p.getType()) {
 			case CONGESTION_STATE_UPDATE:
-				// ignore packet
+				// ignore packet - should already be processed
 				break;
 			case SLICK_PACKET:
 				link = slickPacketHandler(p);

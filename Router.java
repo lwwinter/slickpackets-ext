@@ -114,6 +114,9 @@ public class Router extends Host {
 		Link link = null ;
 
 		switch(p.getType()) {
+			case CONGESTION_STATE_UPDATE:
+				// ignore packet
+				break;
 			case SLICK_PACKET: {
 				SlickPacketHeader header = (SlickPacketHeader) p.getHeader() ;
 				link = header.getNextLink() ;
