@@ -14,6 +14,7 @@ public class SimScheduler {
 	protected long mSimStartTime;
 	protected long mSimTime = DEFAULT_START_TIME;
 	protected PriorityQueue<SimEvent> mSchedule;
+	protected Simulator mSimulator;
 
 	public SimScheduler(){
 		this(DEFAULT_START_TIME);
@@ -25,6 +26,11 @@ public class SimScheduler {
 		mSimTime = initialSimTime;
 		Comparator<SimEvent> comparator = new EventTimeComparator();
 		mSchedule = new PriorityQueue<SimEvent>(DEFAULT_INITIAL_QUEUE_LENGTH,comparator);
+		mSimulator = null;
+	}
+
+	public void registerSimulator(Simulator s) {
+		mSimulator = s;
 	}
 
 	public void run(long duration) {
@@ -40,6 +46,7 @@ public class SimScheduler {
 			if(e != null) {
 				mSimTime = e.getTriggerTime();
 				//System.out.println("Current SimTime: " + mSimTime); // DEBUG
+				//System.out.println("Processing event for "+e.getSourceId()); // DEBUG
 				e.callback();
 			}
 
@@ -70,4 +77,11 @@ public class SimScheduler {
 		mSimTime = mInitialSimTime;
 	}
 
+	public NetworkGraph getNetworkGraph() {
+		if(mSimulator != null) {
+			return mSimulator.getNetworkGraph();
+		} else {
+			return null;
+		}
+	}
 }

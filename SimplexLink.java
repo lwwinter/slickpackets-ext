@@ -83,7 +83,7 @@ public class SimplexLink extends Link {
 		boolean successfulQueue = enqueueEvent(p);
 		if(successfulQueue) { // always succeeds for SimplexLink; included for easy extension
 			// TODO: Don't like floor (vs rounded) division; should be fine at microsecond resolution
-			long transmitDelay = (p.size()*1000000)/mBandwidth;
+			long transmitDelay = (1000000*(long)p.size())/mBandwidth;
 			if(GlobalSimSettings.LogDelays) {
 				PacketDelays pd = p.getDelays();
 				pd.logTransmissionDelay(transmitDelay);

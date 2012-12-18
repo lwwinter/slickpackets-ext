@@ -43,8 +43,9 @@ public class SimTest2 {
 
 		// 2 behaviors
 		// sender sends 1 kbit dummy packets at 10 kbps for 2 seconds
-		LinkedList<Link> path = new LinkedList<Link>();
-		SendAtRateBehavior b1 = new SendAtRateBehavior(path,sender,receiver,10000,1000,
+		/*SendAtRateBehavior b1 = new SendAtRateBehavior(sender,receiver,10000,1000,
+				PacketType.NO_TYPE,0,2000000);*/
+		SendAtRateBehavior b1 = new SendAtRateBehavior(sender,receiver,10000,1000000,
 				PacketType.NO_TYPE,0,2000000);
 		// link between routers fails after 1 second
 		LinkFailureBehavior b2 = new LinkFailureBehavior(r1ToR2,1000000);

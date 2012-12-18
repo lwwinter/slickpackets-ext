@@ -7,10 +7,13 @@ public class Simulator {
 	protected ArrayList<Host> mHosts;
 	protected ArrayList<Link> mLinks;
 	protected ArrayList<Behavior> mBehaviors;
+	protected NetworkConfig mConfig;
+	protected NetworkGraph mGraph;
 
 	public Simulator() {
 		// null constructor for manual loading (vs xml)
 		mScheduler = new SimScheduler();
+		mScheduler.registerSimulator(this);
 		mHosts = new ArrayList<Host>();
 		mLinks = new ArrayList<Link>();
 		mBehaviors = new ArrayList<Behavior>();
@@ -18,13 +21,11 @@ public class Simulator {
 
 	public Simulator(String config_file) {
 		mScheduler = new SimScheduler();
+		mScheduler.registerSimulator(this);
 		mHosts = new ArrayList<Host>();
 		mLinks = new ArrayList<Link>();
 		mBehaviors = new ArrayList<Behavior>();
-
-		SimLoader loader = new SimLoader();
-		loader.load(config_file,this);
-
+		loadNetworkConfig(config_file);
 		registerMembersForScheduling();
 	}
 
@@ -60,5 +61,37 @@ public class Simulator {
 
 	public void addBehavior(Behavior b) {
 		mBehaviors.add(b);
+	}
+
+	public void loadNetworkConfig() {
+		SlickXMLParser loader = new SlickXMLParser();
+		finishNetworkConfig(loader);
+	}
+
+	public void loadNetworkConfig(String config_file) {
+		SlickXMLParser loader = new SlickXMLParser(config_file);
+		finishNetworkConfig(loader);
+	}
+
+	private void finishNetworkConfig(SlickXMLParser loader) {
+		mConfig = loader.getNetworkConfig();
+		mGraph = new NetworkGraph(mConfig);
+		for(Host h : mConfig.getHostsList()){
+			addHost(h);
+		}
+		for(Link l : mConfig.getLinkList()){
+			addLink(l);
+		}
+		for(Behavior b : mConfig.getBehaviorList()) {
+			addBehavior(b);
+		}
+	}
+
+	public NetworkConfig getNetworkConfig() {
+		return mConfig;
+	}
+
+	public NetworkGraph getNetworkGraph() {
+		return mGraph;
 	}
 }

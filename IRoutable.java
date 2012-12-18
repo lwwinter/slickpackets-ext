@@ -2,6 +2,6 @@
 
 public interface IRoutable {
 
-	Host getDestination();
+	Host getDest();
 
 }

@@ -29,6 +29,13 @@ public class SimLogger {
 	}
 
 	// Prints to stdout
+	public static void logError(String s) {
+		if(GlobalSimSettings.LogErrors) {
+			System.out.println("ERROR: "+s);
+		}
+	}
+
+	// Prints to stdout
 	public static void logEventLoss(SchedulableType type, ISchedulerSource lossPoint) {
 		if(GlobalSimSettings.LogEventLoss) {
 			System.out.println("EventLoss: type = " + type + " not understood by " +
@@ -48,6 +55,13 @@ public class SimLogger {
 	public static void logTrace(Packet p, ISchedulerSource location) {
 		if(GlobalSimSettings.LogTrace) {
 			System.out.println("Trace: packet with egid=" + p.eventGroupId() + " @ " + location.getId());
+		}
+	}
+
+	// Prints to stdout
+	public static void logWarning(String s) {
+		if(GlobalSimSettings.LogWarnings) {
+			System.out.println("WARNING: "+s);
 		}
 	}
 }

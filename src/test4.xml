@@ -1,0 +1,25 @@
+<slick-packets>
+	<network id="TestSlick">
+		<hosts-list>
+			<host type="Router" id="RTR1" queue-size="25" throughput="5000000"/>
+			<host type="Router" id="RTR2" queue-size="10" throughput="5000000"/>
+			<host type="Router" id="RTR3" queue-size="10" throughput="5000000"/>
+			<host type="Router" id="RTR4" queue-size="50" throughput="10000000"/>
+			<host type="EndHost" id="SRC"/>
+			<host type="EndHost" id="DST"/>
+		</hosts-list>
+		<links-list>
+			<link id="LNK1" type="SimpleLink" bandwidth="5000000" latency="1000000" from="RTR1" to="RTR2" />
+			<link id="LNK2" type="SimpleLink" bandwidth="5000000" latency="20000" from="RTR1" to="RTR3" />
+			<link id="LNK3" type="SimpleLink" bandwidth="5000000" latency="50000" from="RTR1" to="RTR4" />
+			<link id="LNK4" type="SimpleLink" bandwidth="5000000" latency="0" from="RTR2" to="RTR4" />
+			<link id="LNK5" type="SimpleLink" bandwidth="5000000" latency="5000" from="RTR3" to="RTR4" />
+			<link id="SRCLINK" type="SimpleLink" bandwidth="5000000" latency="10000" from="SRC" to="RTR1" />
+			<link id="DSTLINK" type="SimpleLink" bandwidth="5000000" latency="10000" from="RTR4" to="DST" />
+		</links-list>
+		<behaviors-list>
+			<behavior id="SAR1" type="SendAtRate" from="SRC" to="DST" rate="10000" packet-size="1000" packet-type="Source-Routed" start="0" duration="2000000"/>
+			<behavior id="LF1" type="LinkFailure" link="LNK5" start="1000000"/>
+		</behaviors-list>
+	</network>
+</slick-packets>

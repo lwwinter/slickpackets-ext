@@ -60,6 +60,14 @@ public class Packet implements ISchedulable {
 		return mHeader.getLast().getType();
 	}
 
+	public Host getDest() {
+		return mHeader.getLast().getDest();
+	}
+
+    public void setDest(Host dest) {
+		mHeader.getLast().setDest(dest);
+	}
+
 	public PacketHeader getHeader() {
 		return mHeader.getLast();
 	}

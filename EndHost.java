@@ -1,8 +1,27 @@
 //package org.timecrunch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 public class EndHost extends Host {
+	private class RouteCacheEntry {
+		public LinkedList<Link> path;
+		public boolean stale;
+		public Packet mDelayedPacket;
+
+		public RouteCacheEntry() {
+			this(null);
+		}
+
+		public RouteCacheEntry(LinkedList<Link> path) {
+			this.path = path;
+			this.stale = false;
+		}
+	}
+
+	// caches routes for Source-Routing to minimize computation time
+	protected HashMap<Host,RouteCacheEntry> mRouteCache;
 
 	public EndHost() {
 		this(null);
@@ -10,6 +29,7 @@ public class EndHost extends Host {
 
 	public EndHost(ArrayList<Link> links) {
 		super(new InfFairQScheme(),links);
+		mRouteCache = new HashMap<Host,RouteCacheEntry>();
 	}
 
 	// Corresponds to departure event
@@ -27,6 +47,7 @@ public class EndHost extends Host {
 			SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,
 					mSched.getGlobalSimTime() + delay);
 			mSched.addEvent(e);
+			mDelayedEvent = p; // save packet for next callback (since it was dequeued)
 			return;
 		}
 
@@ -66,7 +87,39 @@ public class EndHost extends Host {
 
 	@Override
 	public Link forward(Packet p) {
-		return super.forward(p); // TODO: extend forwarding behavior
+		Link link = null ;
+
+		switch(p.getType()) {
+			case SOURCE_ROUTED: {
+				LinkedList<Link> path;
+				NetworkGraph ng = mSched.getNetworkGraph();
+				SourceRoutedPacketHeader header = (SourceRoutedPacketHeader)p.getHeader();
+				Host dest = p.getDest();
+				if(ng != null && dest != null) {
+					RouteCacheEntry rce = mRouteCache.get(dest);
+					if(rce == null || rce.stale || rce.path == null) {
+						path = ng.getPath(this,dest);
+						rce = new RouteCacheEntry(path);
+						mRouteCache.put(dest,rce);
+					} else {
+						path = rce.path;
+					}
+
+					// copy path and set in header
+					// TODO: should be safe (and faster) to not copy - check
+					header.setNewPath(new LinkedList<Link>(path));
+				}
+
+				// else no destination or no access to NetworkGraph - returns null
+				link = header.getNextLink();
+				break;
+			}
+			default:
+				link = super.forward(p);
+				break;
+		}
+
+		return link;
 	}
 
 	//public void schedCallback(SchedulableType type); // handled in superclass (Host)

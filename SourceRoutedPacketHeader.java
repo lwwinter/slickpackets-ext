@@ -4,21 +4,32 @@ import java.util.LinkedList;
 
 public class SourceRoutedPacketHeader extends PacketHeader {
 
-	private LinkedList<Link> mPath ;
+	protected LinkedList<Link> mPath ;
+	// not necessarily part of a source-routed header but very easy for header processing
+	protected int mIndex;
 	
+	public SourceRoutedPacketHeader() {
+		this(null);
+	}
+
 	public SourceRoutedPacketHeader(LinkedList<Link> path) {
 		super(PacketType.SOURCE_ROUTED);
 		mPath = path ;
+		mIndex = 0;
 	}
 
 	//additional data/functionality, like path to take
 	
 	public Link getNextLink(){
-		return  mPath.removeFirst() ;
+		if(mPath != null) {
+			return  mPath.get(mIndex++);
+		}
+
+		return null;
 	}
 	
-	public void setNewpath(LinkedList<Link> path){
+	public void setNewPath(LinkedList<Link> path){
 		mPath = path ;
-	}
-	
+		mIndex = 0;
+	}	
 }

@@ -2,7 +2,7 @@
 
 public abstract class Behavior implements ISchedulerSource {
 	// CONSTANTS
-	protected static final long DEFAULT_START_TIME = 0;
+	public static final long DEFAULT_START_TIME = 0;
 
 	// MEMBERS 
 	private static int gBehaviorId = 0;

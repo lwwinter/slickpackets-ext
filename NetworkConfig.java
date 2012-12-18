@@ -7,12 +7,14 @@ public class NetworkConfig {
 	
 	private HashMap<String, Host> hostsMap;
 	private HashMap<String, Link> linksMap;
+	private HashMap<String, Behavior> behaviorsMap;
 	private String networkId;
 
 	NetworkConfig(String networkId){
 		this.networkId = networkId;
 		this.hostsMap = new HashMap<String, Host>();
 		this.linksMap = new HashMap<String, Link>();
+		this.behaviorsMap = new HashMap<String, Behavior>();
 	}
 
 	public HashMap<String, Host> getHostsMap() {
@@ -32,6 +34,14 @@ public class NetworkConfig {
 		this.linksMap = linksMap;
 	}
 
+	public HashMap<String, Behavior> getBehaviorMap() {
+		return behaviorsMap;
+	}
+
+	public void setBehaviorsMap(HashMap<String, Behavior> behaviorsMap) {
+		this.behaviorsMap = behaviorsMap;
+	}
+
 	public String getNetworkId() {
 		return networkId;
 	}
@@ -46,6 +56,12 @@ public class NetworkConfig {
 		ArrayList<Link> list = new ArrayList<Link>(); 
 		list.addAll(linksMap.values());
 		return list ;
+	}
+
+	public ArrayList<Behavior> getBehaviorList() {
+		ArrayList<Behavior> list = new ArrayList<Behavior>();
+		list.addAll(behaviorsMap.values());
+		return list;
 	}
 
 	public void setNetworkId(String networkId) {
@@ -63,6 +79,10 @@ public class NetworkConfig {
 	
 	public void addLink(String key, Link linkObj){
 		this.linksMap.put(key, linkObj);
+	}
+
+	public void addBehavior(String key, Behavior behaviorObj) {
+		this.behaviorsMap.put(key,behaviorObj);
 	}
 
 }

@@ -14,6 +14,7 @@ public abstract class Host implements ISchedulerSource {
 	 * If this behavior is desired, subclass Link and implement accordingly. */
 	protected ArrayList<Link> mLinks;
 	protected SimScheduler mSched;
+	protected ISchedulable mDelayedEvent;
 
 	public Host(IQScheme qscheme) {
 		this(qscheme,null);
@@ -29,6 +30,7 @@ public abstract class Host implements ISchedulerSource {
 		} else {
 			mLinks = new ArrayList<Link>();
 		}
+		mDelayedEvent = null;
 	}
 
 	// Corresponds to departure event
@@ -40,15 +42,12 @@ public abstract class Host implements ISchedulerSource {
 	// Takes a packet and returns the link to forward on
 	public Link forward(Packet p) {
 		Link link = null ;
-		
-		switch(p.getHeader().getType()) {
-			case SOURCE_ROUTED:
-				SourceRoutedPacketHeader header = (SourceRoutedPacketHeader) p.getHeader() ;
-				link = header.getNextLink() ;
-				break;
+
+		switch(p.getType()) {
 			default:
-				if(mLinks.size() != 0)
+				if(mLinks.size() != 0) {
 					link =  mLinks.get(0);
+				}
 				break;
 		}
 		return link ;
@@ -70,6 +69,10 @@ public abstract class Host implements ISchedulerSource {
 
 	public ISchedulable dequeueEvent() {
 		return mQueue.dequeue();
+	}
+
+	public ISchedulable peekAtEvent() {
+		return mQueue.peek();
 	}
 
 	public int queueSize() {
@@ -100,7 +103,20 @@ public abstract class Host implements ISchedulerSource {
 		// Perform action when queued event is selected in the scheduler
 		switch(type) {
 			case DEPARTURE: {
-				Packet p = (Packet)dequeueEvent();
+				Packet p;
+				if(mDelayedEvent != null) {
+					p = (Packet)mDelayedEvent;
+					mDelayedEvent = null;
+				} else {
+					p = (Packet)dequeueEvent();
+				}
+
+				if(p == null) {
+					// Safely handles errors, but non-empty queue may be broken (no new callback)
+					SimLogger.logError("Null packet or callback to empty queue");
+					break;
+				}
+
 				Link link = forward(p);
 				if(link == null ) {
 					SimLogger.logEventLoss(type,this);

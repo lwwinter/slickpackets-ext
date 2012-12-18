@@ -1,0 +1,21 @@
+<slick-packets>
+	<network id="TestSlick">
+		<hosts-list>
+			<host type="Router" id="RTR1" queue-size="10" throughput="20"/>
+			<host type="Router" id="RTR2" queue-size="15" throughput="10"/>
+			<host type="Router" id="RTR3" queue-size="40" throughput="40"/>
+			<host type="Router" id="RTR4" queue-size="45" throughput="50"/>
+			<host type="EndHost" id="SRC"/>
+			<host type="EndHost" id="DST"/>
+		</hosts-list>
+		<links-list>
+			<link id="LNK1" type="SimpleLink" bandwidth="100" latency="1000" from="RTR1" to="RTR2" />
+			<link id="LNK2" type="SimpleLink" bandwidth="100" latency="20" from="RTR1" to="RTR3" />
+			<link id="LNK3" type="SimpleLink" bandwidth="100" latency="50" from="RTR1" to="RTR4" />
+			<link id="LNK4" type="SimpleLink" bandwidth="100" latency="0" from="RTR2" to="RTR4" />
+			<link id="LNK5" type="SimpleLink" bandwidth="100" latency="5" from="RTR3" to="RTR4" />
+			<link id="SRCLINK" type="SimpleLink" bandwidth="100" latency="10" from="SRC" to="RTR1" />
+			<link id="DSTLINK" type="SimpleLink" bandwidth="100" latency="10" from="RTR4" to="DST" />
+		</links-list>
+	</network>
+</slick-packets>

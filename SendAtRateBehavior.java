@@ -12,9 +12,9 @@ import java.util.LinkedList;
 
 public class SendAtRateBehavior extends Behavior {
 	// CONSTANTS
-	protected static final int DEFAULT_PACKET_SIZE = 240; // 30 bytes
-	protected static final PacketType DEFAULT_PACKET_TYPE = PacketType.SOURCE_ROUTED; // simplest routable type
-	protected static final long DEFAULT_DURATION = -1; // infinite
+	public static final int DEFAULT_PACKET_SIZE = 240; // 30 bytes
+	public static final PacketType DEFAULT_PACKET_TYPE = PacketType.SOURCE_ROUTED; // simplest routable type
+	public static final long DEFAULT_DURATION = -1; // infinite
 
 	// MEMBERS
 	protected Host mDest; // destination host
@@ -23,16 +23,14 @@ public class SendAtRateBehavior extends Behavior {
 	protected PacketType mPacketType; // type of packet to instantiate (optional)
 	protected long mDuration; // duration of behavior (optional)
 	private long mBitUsProcessed; // used to model quantized delay for any sending rate
-	protected LinkedList<Link> mPath ;
 
-	public SendAtRateBehavior(LinkedList<Link> path, Host target, Host dest, int rate) {
-		this(path,target,dest,rate,DEFAULT_PACKET_SIZE,DEFAULT_PACKET_TYPE,DEFAULT_START_TIME,DEFAULT_DURATION);
+	public SendAtRateBehavior(Host target, Host dest, int rate) {
+		this(target,dest,rate,DEFAULT_PACKET_SIZE,DEFAULT_PACKET_TYPE,DEFAULT_START_TIME,DEFAULT_DURATION);
 	}
 
-	public SendAtRateBehavior(LinkedList<Link> path, Host target, Host dest, int rate, int size, PacketType type,
+	public SendAtRateBehavior(Host target, Host dest, int rate, int size, PacketType type,
 			long startTime, long duration) {
 		super(target,startTime);
-		mPath = path ;
 		mDest = dest;
 		mSendingRate = rate;
 		mPacketSize = size;
@@ -68,13 +66,12 @@ public class SendAtRateBehavior extends Behavior {
 		Packet p;
 		switch(mPacketType) {
 			case SOURCE_ROUTED:
-				LinkedList<Link> path = new LinkedList<Link>() ; 
-				for(Link l : mPath)
-					path.add(l);
-				p = new SourceRoutedPacket(path,mDest,mPacketSize,getBehaviorId());
+				// destination set via constructor vs setDest()
+				p = new SourceRoutedPacket(mDest,mPacketSize,null,getBehaviorId());
 				break;
 			default:
 				p = new Packet(mPacketSize,getBehaviorId());
+				p.setDest(mDest); // likely null
 				break;
 		}
 
@@ -83,14 +80,14 @@ public class SendAtRateBehavior extends Behavior {
 
 		// queue next packet
 		long nextSend = mSched.getGlobalSimTime() + getSendingDelay(mPacketSize);
-		if(nextSend < mStartTime + mDuration) {
+		if(mDuration < 0 || nextSend < mStartTime + mDuration){
 			SimEvent e = new SimEvent(SchedulableType.HOST_SEND,this,nextSend);
 			mSched.addEvent(e);
 		}
 	}
 
 	private long getSendingDelay(int size) {
-		mBitUsProcessed += size*1000000;
+		mBitUsProcessed += 1000000*(long)size;
 		long rateLimitedDelay = mBitUsProcessed/mSendingRate;
 		mBitUsProcessed %= mSendingRate;
 		return rateLimitedDelay;

@@ -55,6 +55,7 @@ public class Router extends Host {
 			long tempTimestamp = mSched.getGlobalSimTime() + delay;
 			SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,tempTimestamp);
 			mSched.addEvent(e);
+			mDelayedEvent = p;
 
 			// process link-delay statistics
 			if(GlobalSimSettings.LogDelays) {
@@ -110,7 +111,19 @@ public class Router extends Host {
 
 	@Override
 	public Link forward(Packet p) {
-		return super.forward(p); // TODO: extend forwarding behavior
+		Link link = null ;
+
+		switch(p.getType()) {
+			case SOURCE_ROUTED:
+				SourceRoutedPacketHeader header = (SourceRoutedPacketHeader) p.getHeader() ;
+				link = header.getNextLink() ;
+				break;
+			default:
+				link = super.forward(p);
+				break;
+		}
+
+		return link;
 	}
 
 	private long getProcessingDelay(Packet p) {

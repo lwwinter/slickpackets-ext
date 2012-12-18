@@ -14,23 +14,24 @@ public class NetworkGraph {
 	private NetworkConfig networkConfig ;
 	private SimpleWeightedGraph<Host,Link> graph ; 
 	
-	
-	
-	public NetworkGraph(NetworkConfig n){
-		networkConfig = n ;
-		graph = new SimpleWeightedGraph<Host,Link>(Link.class) ;
-		buildGraph();
-		//System.out.println(graph.toString());
+	public NetworkGraph(ArrayList<Host> hosts, ArrayList<Link> links) {
+		loadNewNetworkConfig(hosts,links);
 	}
 	
-	private void buildGraph(){
-		
-		ArrayList<Host> hosts = networkConfig.getHostsList() ;
+	public NetworkGraph(NetworkConfig n){
+		loadNewNetworkConfig(n);
+		//System.out.println(graph.toString());
+	}
+
+	private void buildGraph() {
+		buildGraph(networkConfig.getHostsList(),networkConfig.getLinkList());
+	}
+
+	private void buildGraph(ArrayList<Host> hosts, ArrayList<Link> links){
 		for(Host host: hosts){
 			graph.addVertex(host);
 		}
-		
-		ArrayList<Link> links = networkConfig.getLinkList() ;
+
 		for(Link link: links){
 			Host[] ends = link.getHosts() ;
 			// assume it's simple link
@@ -57,6 +58,12 @@ public class NetworkGraph {
 		return path;
 	}
 	
+	public void loadNewNetworkConfig(ArrayList<Host> hosts, ArrayList<Link> links) {
+		networkConfig = null;
+		graph = new SimpleWeightedGraph<Host,Link>(Link.class);
+		buildGraph(hosts,links);
+	}
+
 	public void loadNewNetworkConfig(NetworkConfig n){
 		networkConfig = n ;
 		graph = new SimpleWeightedGraph<Host,Link>(Link.class) ;
