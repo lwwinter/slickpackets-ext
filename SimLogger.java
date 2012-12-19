@@ -11,10 +11,10 @@ import java.util.ArrayList;
 public class SimLogger {
 	
 	private final static SimLogger simLogger = new SimLogger();
-	private final static String logFilaname = "src"+File.separator+"logFile.csv" ;
-	private final static String output = "src"+File.separator+"statistic" ;
-	//private final static String logFilaname = "logFile.csv" ;
-	//private final static String output = "statistic" ;
+	//private final static String logFilaname = "src"+File.separator+"logFile.csv" ;
+	//private final static String output = "src"+File.separator+"statistic" ;
+	private final static String logFilaname = "logFile.csv" ;
+	private final static String output = "statistic" ;
 
 	private FileWriter fileWriter ;
 	private BufferedWriter writer ;
@@ -71,7 +71,7 @@ public class SimLogger {
 		if(GlobalSimSettings.LogEventLoss) {
 			SimScheduler sched = lossPoint.getScheduler();
 			long timestamp = (sched != null) ? sched.getGlobalSimTime() : -1;
-			System.out.println("EventLoss("+timestamp+"): type = " + type + " not understood by " +
+			System.out.println("EventLoss("+timestamp+"): type = " + type + " not understood by " +lossPoint.getId());
 
 			writeLog("EventLoss, type = " + type + ", not understood by " +
 					lossPoint.getId());
