@@ -24,11 +24,14 @@ public class Packet implements ISchedulable, IRoutable {
 	public Packet(int payload, int egid) {
 		mPayloadSize = payload;
 		mEventGroupId = egid;
+	/*
 		if(GlobalSimSettings.LogDelays) {
 			mPacketDelays = new PacketDelays();
 		} else {
 			mPacketDelays = null;
 		}
+	*/
+		mPacketDelays = new PacketDelays(); // FIXME: wastes some memory but fixes null pointer exception
 		mHeader = new LinkedList<PacketHeader>();
 		mHeader.add(new PacketHeader(PacketType.NO_TYPE));
 		mPacketId = gPacketId++;
