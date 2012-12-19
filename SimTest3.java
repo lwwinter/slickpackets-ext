@@ -51,7 +51,10 @@ public class SimTest3 {
 
 		GlobalSimSettings.LogDrops = true;
 		GlobalSimSettings.LogTrace = true ;
-
+		GlobalSimSettings.LogDelays = true ;
+		
 		s.start();
+		
+		SimLogger.getInstance().summerize();
 	}
 }

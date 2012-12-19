@@ -36,6 +36,10 @@ public class PacketDelays {
 		return mPropagationDelay;
 	}
 
+	public long getTotalDelay() {
+		return mQueueingDelay+mLinkBusyDelay+mTransmissionDelay+mPropagationDelay;
+	}
+	
 	public void logQueueingDelay(long delay) {
 		mQueueingDelay += delay;
 	}
