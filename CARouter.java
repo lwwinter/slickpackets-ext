@@ -89,9 +89,6 @@ public class CARouter extends Host {
 			//TODO: read backup path from slick packet (within linkNotEnabledHandler?)
 		}
 
-		//TODO: read link utilization, implement slick packet ext. (within forward?) 
-		// If it's high loaded, sent probe packet; over loaded, using backup path
-
 		// Calculate and log queueing delay
 		if(GlobalSimSettings.LogDelays) {
 			long arrivalTime = mArrivalTimes.get(p);
@@ -120,8 +117,27 @@ public class CARouter extends Host {
 			return;
 		}
 
-		if(state == CongestionState.HIGH_LOAD && p.getType() == PacketType.SLICK_PACKET) {
+		if(state == CongestionState.HIGH_LOAD && p.getType() == PacketType.SLICK_PACKET_EXT) {
 			// spawn Probe packet along alternate path
+			/* FIXME: for now, we assume that we can send on both outgoing links at once, despite
+			 * our explicit lack of this feature with respect to other queued packets.
+			 * We should really model this as the next packet queued after the SlickPacket! */
+			SlickPacketExt spe = (SlickPacketExt)p;
+			ProbePacket pp = spe.spawnProbe();
+			if(pp != null) {
+				Link altLink = forward(pp);
+
+				// attempt to push packet onto Link
+				// FIXME: Should PROBABLY check if link is free, but for 2-host links, doesn't matter
+				if(altLink.isEnabled() == false) {
+					// TODO: Might be nice to avoid this if Host through altLink is in OVERLOAD too
+					linkNotEnabledHandler(pp);
+				} else {
+					altLink.recvFrom(pp,this);
+				}
+			}
+
+			// Note: NOW we'll actually send the SlickPacketExt
 		}
 		
 		egress.recvFrom(p,this);

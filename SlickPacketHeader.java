@@ -33,17 +33,41 @@ public class SlickPacketHeader extends PacketHeader {
 
 	public LinkedList<Link> getFailover() {
 		// Should have already incremented mIndex before handling failures (must check Link)
+		LinkedList<Link> rem;
+		int indexToGet = (mIndex > 0) ? mIndex-1 : 0;
 		if(mFailovers != null) {
-			if(mIndex > 0) {
-				return mFailovers.get(mIndex-1);
-			} else {
-				return mFailovers.get(0);
-			}
+			rem = mFailovers.get(indexToGet);
+		} else {
+			rem = null;
 		}
 
-		return null;
+		if(rem == null) {
+			return null;
+		}
+
+		int tempIndex = 0;
+		LinkedList<Link> ret = new LinkedList<Link>();
+		// mIndex should have been already incremented
+		while(tempIndex < indexToGet) {
+			ret.add(mPath.get(tempIndex++));
+		}
+
+		ret.addAll(rem);
+
+		if(ret.size() == 0) {
+			return null;
+		}
+
+		return ret;
 	}
-	
+
+	// keeps mIndex intact
+	public void switchToFailover(LinkedList<Link> failover) {
+		mPath = failover;
+		mFailovers = null;
+		mIndex--; // should have been incremented to check if link failed
+	}
+
 	public void setNewPath(LinkedList<Link> path, ArrayList<LinkedList<Link>> failovers){
 		mPath = path ;
 		mIndex = 0;

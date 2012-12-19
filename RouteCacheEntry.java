@@ -3,7 +3,7 @@ import java.util.LinkedList;
 
 public class RouteCacheEntry {
 	// CONSTANTS
-	protected static final int PROBE_SEQ_NUM_INITIALIZER = 0;
+	protected static final int PROBE_SEQ_NUM_INITIALIZER = 1;
 	public static final long RTT_INITIALIZER = -1;
 	public static final long LAST_PROBE_ALLOWED_TIME_INITIALIZER = -1;
 
@@ -48,6 +48,12 @@ public class RouteCacheEntry {
 		this.lastProbeAllowedTime = LAST_PROBE_ALLOWED_TIME_INITIALIZER; // immediately allow probes
 	}
 
+	public void setPath(LinkedList<Link> path) {
+		this.path = path;
+		this.rtt = estimateRtt(this.rtt); // old value is still better than reinitializing completely
+		this.stale = false;
+	}
+
 	private long estimateRtt() {
 		return estimateRtt(RTT_INITIALIZER);
 	}
@@ -68,6 +74,6 @@ public class RouteCacheEntry {
 			counter += l.getLatency();
 		}
 
-		return counter;
+		return 2*counter;
 	}
 }

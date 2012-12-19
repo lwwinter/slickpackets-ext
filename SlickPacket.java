@@ -40,4 +40,9 @@ public class SlickPacket extends Packet implements ISlickPackets {
 		sph.setNewPath(path,failovers);
 	}
 
+	public void switchToFailover(LinkedList<Link> failover) {
+		SlickPacketHeader sph = (SlickPacketHeader)mHeader.getLast();
+		sph.switchToFailover(failover);
+	}
+
 }

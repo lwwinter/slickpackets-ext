@@ -96,6 +96,8 @@ public abstract class Host implements ISchedulerSource {
 
 	public void linkNotEnabledHandler(Packet p) {
 		switch(p.getType()) {
+			case SLICK_PACKET_EXT:
+				// intentional fallthrough
 			case SLICK_PACKET:
 				slickPacketFailureHandler(p);
 				break;
@@ -107,15 +109,15 @@ public abstract class Host implements ISchedulerSource {
 	}
 
 	private void slickPacketFailureHandler(Packet p) {
-		SlickPacketHeader spHeader = (SlickPacketHeader)p.getHeader();
-		LinkedList<Link> altPath = spHeader.getFailover();
+		ISlickPackets sp = (ISlickPackets)p;
+		LinkedList<Link> altPath = sp.getFailover();
 		if(altPath == null) {
 			SimLogger.logDrop(p,this);
 			return;
 		}
 
 		// set header's path to alternate path
-		spHeader.setNewPath(altPath,null);
+		sp.switchToFailover(altPath);
 
 		// reschedule for immediate departure (now)
 		SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,mSched.getGlobalSimTime());

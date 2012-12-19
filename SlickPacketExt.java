@@ -5,11 +5,11 @@ import java.util.LinkedList;
 
 public class SlickPacketExt extends Packet implements ISlickPackets {
 	public static final int PROBES_NOT_ALLOWED = 0;
-	public SlickPacketExt(Host src, Host dest, int probeSeqNum, int payload) {
-		this(src,dest,probeSeqNum,payload,null,null,DEFAULT_EVENT_GROUP_ID);
+	public SlickPacketExt(Host src, Host dest, int payload) {
+		this(src,dest,payload,PROBES_NOT_ALLOWED,null,null,DEFAULT_EVENT_GROUP_ID);
 	}
 
-	public SlickPacketExt(Host src, Host dest, int probeSeqNum, int payload, LinkedList<Link> path,
+	public SlickPacketExt(Host src, Host dest, int payload, int probeSeqNum, LinkedList<Link> path,
 			ArrayList<LinkedList<Link>> failovers, int egid) {
 		super(payload,egid);
 		SlickPacketExtHeader header = new SlickPacketExtHeader(path,failovers,probeSeqNum);
@@ -43,4 +43,38 @@ public class SlickPacketExt extends Packet implements ISlickPackets {
 		speh.setNewPath(path,failovers);
 	}
 
+	public void switchToFailover(LinkedList<Link> failover) {
+		SlickPacketExtHeader speh = (SlickPacketExtHeader)mHeader.getLast();
+		speh.switchToFailover(failover);
+	}
+
+	public Host getSrc() {
+		SlickPacketExtHeader speh = (SlickPacketExtHeader)mHeader.getLast();
+		return speh.getSrc();
+	}
+
+	public int getProbeSeqNum() {
+		SlickPacketExtHeader speh = (SlickPacketExtHeader)mHeader.getLast();
+		return speh.getProbeSeqNum();
+	}
+
+	public boolean canSendProbes() {
+		SlickPacketExtHeader speh = (SlickPacketExtHeader)mHeader.getLast();
+		return speh.canSendProbes();
+	}
+
+	public void setProbeSeqNum(int psn) {
+		SlickPacketExtHeader speh = (SlickPacketExtHeader)mHeader.getLast();
+		speh.setProbeSeqNum(psn);
+	}
+
+	public boolean hasSplitProbe() {
+		SlickPacketExtHeader speh = (SlickPacketExtHeader)mHeader.getLast();
+		return speh.hasSplitProbe();
+	}
+
+	public ProbePacket spawnProbe() {
+		SlickPacketExtHeader speh = (SlickPacketExtHeader)mHeader.getLast();
+		return speh.spawnProbe(eventGroupId());
+	}
 }

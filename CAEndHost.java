@@ -9,6 +9,7 @@ public class CAEndHost extends Host {
 	// caches routes for Source-Routing to minimize computation time
 	protected HashMap<Host,RouteCacheEntry> mRouteCache;
 	protected HashMap<Host,CongestionState> mNeighborStates;
+	protected HashMap<Host,ProbeLogEntry> mProbeLog;
 
 	public CAEndHost() {
 		this(null);
@@ -17,6 +18,7 @@ public class CAEndHost extends Host {
 	public CAEndHost(ArrayList<Link> links) {
 		super(new InfFairQScheme(),links);
 		mRouteCache = new HashMap<Host,RouteCacheEntry>();
+
 		// initialize neighbors' congestion states
 		mNeighborStates = new HashMap<Host,CongestionState>();
 		if(links != null) {
@@ -30,13 +32,36 @@ public class CAEndHost extends Host {
 				}
 			}
 		}
+
+		mProbeLog = new HashMap<Host,ProbeLogEntry>();
 	}
 
 	// Corresponds to departure event
 	public void sendOn(Packet p, Link egress) {
-		if(egress.isEnabled() == false) {
+		// TODO: Expects links to only have 2 hosts, otherwise behavior is erratic
+		Host[] dests = egress.getHosts();
+		Host nextHop = null;
+		for(Host h : dests) {
+			if(h.getHostId() != getHostId()) {
+				nextHop = h;
+				break;
+			}
+		}
+
+		CongestionState state;
+		if(nextHop != null) {
+			state = mNeighborStates.get(nextHop);
+		} else { // assume normal load if no data
+			SimLogger.logError("nextHop not found on Link: "+egress.getId()+", SrcHost: "+getId());
+			state = CongestionState.NORMAL_LOAD;
+		}
+
+		// attempt to push packet onto Link
+		if(egress.isEnabled() == false ||
+				(state == CongestionState.OVERLOAD && p.getType() == PacketType.SLICK_PACKET)) {
 			linkNotEnabledHandler(p);
 			return;
+			//TODO: read backup path from slick packet (within linkNotEnabledHandler?)
 		}
 
 		// If the link says it is free, the packet is passed to the Link
@@ -49,6 +74,29 @@ public class CAEndHost extends Host {
 			mSched.addEvent(e);
 			mDelayedEvent = p; // save packet for next callback (since it was dequeued)
 			return;
+		}
+
+		if(state == CongestionState.HIGH_LOAD && p.getType() == PacketType.SLICK_PACKET_EXT) {
+			// spawn Probe packet along alternate path
+			/* FIXME: for now, we assume that we can send on both outgoing links at once, despite
+			 * our explicit lack of this feature with respect to other queued packets.
+			 * We should really model this as the next packet queued after the SlickPacket! */
+			SlickPacketExt spe = (SlickPacketExt)p;
+			ProbePacket pp = spe.spawnProbe();
+			if(pp != null) {
+				Link altLink = forward(pp);
+
+				// attempt to push packet onto Link
+				// FIXME: Should PROBABLY check if link is free, but for 2-host links, doesn't matter
+				if(altLink.isEnabled() == false) {
+					// TODO: Might be nice to avoid this if Host through altLink is in OVERLOAD too
+					linkNotEnabledHandler(pp);
+				} else {
+					altLink.recvFrom(pp,this);
+				}
+			}
+
+			// Note: NOW we'll actually send the SlickPacketExt
 		}
 
 		/* EndHost has no processing delay, and we don't care about link delay before the packet
@@ -80,15 +128,72 @@ public class CAEndHost extends Host {
 				}
 			}
 		} else { // receive packet
-			/* FIXME: GiveStateUpdatesPriority always true at the moment.
-			 * If it's not, we may have to deal with dropping congestion state updates
-			 * due to a full queue, and additional design will likely be needed.
-			 */
-			if(p.getType() == PacketType.CONGESTION_STATE_UPDATE) {
-				CongestionStateUpdate csu = (CongestionStateUpdate)p;
-				mNeighborStates.put(csu.getSender(),csu.getState());
-			} else {
-				SimLogger.logEventArrival(p,this);
+			switch(p.getType()) {
+				case PROBE_PACKET: {
+					ProbePacket pp = (ProbePacket)p;
+					Host src = pp.getSrc();
+					if(src != null) {
+						ProbeLogEntry ple = mProbeLog.get(src);
+						if(ple == null) {
+							ple = new ProbeLogEntry();
+							mProbeLog.put(src,ple);
+						}
+
+						boolean doPack = ple.logProbeArrival(pp.getProbeSeqNum());
+						if(doPack) {
+							ProbeAck pa = new ProbeAck(pp);
+							this.recvOn(pa,null); // add Probe-ACK to queue and send
+						}
+					}
+					
+					break;
+				}
+
+				case PROBE_ACK: {
+					ProbeAck pa = (ProbeAck)p;
+					Host src = pa.getSrc();
+					NetworkGraph ng = mSched.getNetworkGraph();
+					if(ng != null && src != null) {
+						RouteCacheEntry rce = mRouteCache.get(src);
+						if(rce != null) {
+							rce.setPath(pa.getReversePath());
+							rce.failovers = ng.computeFailovers(rce.path,this,src);
+						}
+					}
+
+					break;
+				}
+
+				case SLICK_PACKET_EXT: {
+					SlickPacketExt spe = (SlickPacketExt)p;
+					Host src = spe.getSrc();
+					if(src != null) {
+						ProbeLogEntry ple = mProbeLog.get(src);
+						if(ple == null) {
+							ple = new ProbeLogEntry();
+							mProbeLog.put(src,ple);
+						}
+
+						ple.logPacketArrival(spe.getProbeSeqNum());
+					}
+
+					SimLogger.logEventArrival(p,this);
+					break;
+				}
+
+				case CONGESTION_STATE_UPDATE: {
+					/* FIXME: GiveStateUpdatesPriority always true at the moment.
+					 * If it's not, we may have to deal with dropping congestion state updates
+					 * due to a full queue, and additional design will likely be needed.
+					 */
+					CongestionStateUpdate csu = (CongestionStateUpdate)p;
+					mNeighborStates.put(csu.getSender(),csu.getState());
+					break;
+				}
+
+				default:
+					SimLogger.logEventArrival(p,this);
+					break;
 			}
 		}
 	}
@@ -114,7 +219,8 @@ public class CAEndHost extends Host {
 				break;
 
 			case SLICK_PACKET_EXT:
-				// intentional fallthrough
+				link = slickPacketExtHandler((SlickPacketExt)p);
+				break;
 			case SLICK_PACKET:
 				link = slickPacketHandler((ISlickPackets)p);
 				break;
@@ -182,6 +288,24 @@ public class CAEndHost extends Host {
 
 		// else no destination or no access to NetworkGraph - returns null
 		return sp.getNextLink();
+	}
+
+	private Link slickPacketExtHandler(SlickPacketExt spe) {
+		Link link = slickPacketHandler((ISlickPackets)spe);
+		Host dest = spe.getDest();
+		if(dest != null) {
+			RouteCacheEntry rce = mRouteCache.get(dest);
+			// only allow 1 SlickPacketExt to spawn probes per RTT
+			if(rce.lastProbeAllowedTime == -1 ||
+					(rce.lastProbeAllowedTime + rce.rtt >= mSched.getGlobalSimTime())) {
+				spe.setProbeSeqNum(rce.probeSeqNum++);
+				if(rce.probeSeqNum == 0) {
+					rce.probeSeqNum = 1;
+				}
+			}
+		}
+
+		return link;
 	}
 
 	//public void schedCallback(SchedulableType type); // handled in superclass (Host)

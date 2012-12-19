@@ -40,17 +40,41 @@ public class SlickPacketExtHeader extends PacketHeader {
 
 	public LinkedList<Link> getFailover() {
 		// Should have already incremented mIndex before handling failures (must check Link)
+		LinkedList<Link> rem;
+		int indexToGet = (mIndex > 0) ? mIndex-1 : 0;
 		if(mFailovers != null) {
-			if(mIndex > 0) {
-				return mFailovers.get(mIndex-1);
-			} else {
-				return mFailovers.get(0);
-			}
+			rem = mFailovers.get(indexToGet);
+		} else {
+			rem = null;
 		}
 
-		return null;
+		if(rem == null) {
+			return null;
+		}
+
+		int tempIndex = 0;
+		LinkedList<Link> ret = new LinkedList<Link>();
+		// mIndex should have been already incremented
+		while(tempIndex < indexToGet) {
+			ret.add(mPath.get(tempIndex++));
+		}
+
+		ret.addAll(rem);
+
+		if(ret.size() == 0) {
+			return null;
+		}
+
+		return ret;
 	}
-	
+
+	// keeps mIndex intact
+	public void switchToFailover(LinkedList<Link> failover) {
+		mPath = failover;
+		mFailovers = null;
+		mIndex--; // should have been incremented to check if link failed
+	}
+
 	public void setNewPath(LinkedList<Link> path, ArrayList<LinkedList<Link>> failovers){
 		mPath = path ;
 		mIndex = 0;
@@ -61,8 +85,20 @@ public class SlickPacketExtHeader extends PacketHeader {
 		return mPath;
 	}
 
+	public Host getSrc() {
+		return mSrc;
+	}
+
 	public void setSrc(Host src) {
 		mSrc = src;
+	}
+
+	public int getProbeSeqNum() {
+		return mProbeSeqNum;
+	}
+
+	public void setProbeSeqNum(int psn) {
+		mProbeSeqNum = psn;
 	}
 
 	public boolean canSendProbes() {
@@ -72,4 +108,17 @@ public class SlickPacketExtHeader extends PacketHeader {
 	public boolean hasSplitProbe() {
 		return mSplitProbe;
 	}
+
+	public ProbePacket spawnProbe(int egid) {
+		if(!canSendProbes()) {
+			return null;
+		}
+
+		ProbePacket pp = new ProbePacket(mSrc,mDest,mProbeSeqNum,getFailover(),
+				((mIndex>0) ? mIndex-1 : 0),egid);
+		mSplitProbe = true;
+
+		return pp;
+	}
+
 }
