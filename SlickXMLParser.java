@@ -69,6 +69,16 @@ public class SlickXMLParser {
 	    				endHost = new EndHost(new ArrayList<Link>());
 	    				endHost.setId(reader.getAttributeValue(null, "id"));
 	    				networkConfig.addHost(endHost.getId(),(Host) endHost) ;
+	    			}else if("carouter".equalsIgnoreCase(reader.getAttributeValue(null, "type"))){
+	    				long throughput = Long.parseLong(reader.getAttributeValue(null, "throughput"));
+		    			int qsize = Integer.parseInt(reader.getAttributeValue(null, "queue-size"));
+		    			Host carouter = new CARouter(throughput, qsize, new ArrayList<Link>());
+		    			carouter.setId(reader.getAttributeValue(null, "id"));
+		    			networkConfig.addHost(carouter.getId(),(Host) carouter);
+	    			}else if("caendhost".equalsIgnoreCase(reader.getAttributeValue(null, "type"))){
+	    				Host caendHost = new CAEndHost(new ArrayList<Link>());
+	    				caendHost.setId(reader.getAttributeValue(null, "id"));
+	    				networkConfig.addHost(caendHost.getId(),(Host) caendHost) ;
 	    			}
 	    			
 	    		}else if(reader.getLocalName().equalsIgnoreCase("link")){
@@ -105,6 +115,8 @@ public class SlickXMLParser {
 								ptype = PacketType.SOURCE_ROUTED;
 							} else if(type.equalsIgnoreCase("slick-packet")) {
 								ptype = PacketType.SLICK_PACKET;
+							} else if(type.equalsIgnoreCase("slick-packet-ext")) {
+								ptype = PacketType.SLICK_PACKET_EXT;
 							} else {
 								if(GlobalSimSettings.LogWarnings) {
 									SimLogger.logWarning("Invalid packet type for SendAtRateBehavior");

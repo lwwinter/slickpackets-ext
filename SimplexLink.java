@@ -61,7 +61,7 @@ public class SimplexLink extends Link {
 		deliver(p);
 	}
 
-	// Corresponds to departure event, null dest --> broadcast
+	// Corresponds to delivery event, null dest --> broadcast
 	public void deliver(Packet p) {
 		// TODO: Consider moving delays here (at least propagation)
 		mDstHost.recvOn(p,this);
@@ -73,6 +73,8 @@ public class SimplexLink extends Link {
 			if(callbackTime != null) {
 				SimEvent e = new SimEvent(SchedulableType.DELIVERY,this,callbackTime.longValue());
 				mSched.addEvent(e);
+			} else {
+				SimLogger.logError(getId()+" queueSize>0 but callbackTimes empty!");
 			}
 		}
 	}
@@ -98,11 +100,11 @@ public class SimplexLink extends Link {
 			long tempTimestamp = mSched.getGlobalSimTime() + transmitDelay;
 			mLinkClearTime = tempTimestamp;
 			tempTimestamp += mLatency;
+			mCallbackTimes.put(p,new Long(tempTimestamp));
+
 			if(queueSize() == 1) {
 				SimEvent e = new SimEvent(SchedulableType.DELIVERY,this,tempTimestamp);
 				mSched.addEvent(e);
-			} else {
-				mCallbackTimes.put(p,new Long(tempTimestamp));
 			}
 		}
 	}

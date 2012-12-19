@@ -65,7 +65,8 @@ public class SimpleLink extends Link {
 			return link.getDelayUntilFree();
 		}
 
-		// TODO: Consider this an error - SHOULD block simulation event
+		// This SHOULD block the simulation event
+		SimLogger.logError("SimpleLink could not find a link from "+src.getId());
 		return Long.MAX_VALUE;
 	}
 

@@ -13,6 +13,10 @@ public class Packet implements ISchedulable, IRoutable {
 	int mPayloadSize;
 	protected PacketDelays mPacketDelays;
 
+	// insanely useful for debugging (especially trace)
+	private static long gPacketId = 0;
+	protected long mPacketId;
+
 	public Packet(int payload) {
 		this(payload,DEFAULT_EVENT_GROUP_ID);
 	}
@@ -27,6 +31,7 @@ public class Packet implements ISchedulable, IRoutable {
 		}
 		mHeader = new LinkedList<PacketHeader>();
 		mHeader.add(new PacketHeader(PacketType.NO_TYPE));
+		mPacketId = gPacketId++;
 	}
 
 	// copy constructor
@@ -38,6 +43,11 @@ public class Packet implements ISchedulable, IRoutable {
 			pd = new PacketDelays(p.getDelays());
 		}
 		mPacketDelays = pd;
+		mPacketId = gPacketId++;
+	}
+
+	public long getPacketId() {
+		return mPacketId;
 	}
 
 	public int eventGroupId() {

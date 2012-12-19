@@ -5,7 +5,7 @@ public abstract class Behavior implements ISchedulerSource {
 	public static final long DEFAULT_START_TIME = 0;
 
 	// MEMBERS 
-	private static int gBehaviorId = 0;
+	private static int gBehaviorId = 1;
 	private int mId;
 	protected String mStringId;
 	protected SimScheduler mSched;

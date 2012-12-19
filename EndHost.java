@@ -102,22 +102,24 @@ public class EndHost extends Host {
 	}
 
 	private Link sourceRoutedPacketHandler(ISourceRoutable sr) {
-		LinkedList<Link> path;
-		NetworkGraph ng = mSched.getNetworkGraph();
-		Host dest = sr.getDest();
-		if(ng != null && dest != null) {
-			RouteCacheEntry rce = mRouteCache.get(dest);
-			if(rce == null || rce.stale || rce.path == null) {
-				path = ng.getPath(this,dest);
-				rce = new RouteCacheEntry(path);
-				mRouteCache.put(dest,rce);
-			} else {
-				path = rce.path;
-			}
+		if(sr.getPath() == null) { // only set path if not already set
+			LinkedList<Link> path;
+			NetworkGraph ng = mSched.getNetworkGraph();
+			Host dest = sr.getDest();
+			if(ng != null && dest != null) {
+				RouteCacheEntry rce = mRouteCache.get(dest);
+				if(rce == null || rce.stale || rce.path == null) {
+					path = ng.getPath(this,dest);
+					rce = new RouteCacheEntry(path);
+					mRouteCache.put(dest,rce);
+				} else {
+					path = rce.path;
+				}
 
-			// copy path and set in header
-			// TODO: should be safe (and faster) to not copy - check
-			sr.setNewPath(new LinkedList<Link>(path));
+				// copy path and set in header
+				// TODO: should be safe (and faster) to not copy - check
+				sr.setNewPath(new LinkedList<Link>(path));
+			}
 		}
 
 		// else no destination or no access to NetworkGraph - returns null

@@ -65,6 +65,10 @@ public class SendAtRateBehavior extends Behavior {
 		// Create packet
 		Packet p;
 		switch(mPacketType) {
+			case SLICK_PACKET_EXT:
+				p = new SlickPacketExt(getTargetHost(),mDest,mPacketSize,SlickPacketExt.PROBES_NOT_ALLOWED,
+						null,null,getBehaviorId());
+				break;
 			case SLICK_PACKET:
 				p = new SlickPacket(mDest,mPacketSize,null,null,getBehaviorId());
 				break;

@@ -130,5 +130,16 @@ public class NetworkGraph {
 	public void addHost(Host host){
 		graph.addVertex(host);
 	}
-	
+
+	// useful for debugging
+	public static void printPath(LinkedList<Link> path) {
+		if(path == null) {
+			System.out.println("PATH-LINK: null");
+		}
+
+		for(Link l : path) {
+			System.out.println("PATH-LINK: "+l.getId());
+		}
+	}
+
 }

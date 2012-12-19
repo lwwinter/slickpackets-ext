@@ -169,6 +169,8 @@ public class CARouter extends Host {
 		if(GiveStateUpdatesPriority && p.getType() == PacketType.CONGESTION_STATE_UPDATE) {
 			CongestionStateUpdate csu = (CongestionStateUpdate)p;
 			mNeighborStates.put(csu.getSender(),csu.getState());
+			//System.out.println("CARouter: "+getId()+" received CongestionStateUpdate: "+csu.getState()+" from "+csu.getSender().getId()); // DEBUG
+			return;
 		}
 
 		boolean successfulQueue = enqueueEvent(p);
@@ -179,28 +181,38 @@ public class CARouter extends Host {
 				// total delay will be logged as difference in timestamps in sendOn()
 				SimEvent e = new SimEvent(SchedulableType.DEPARTURE,this,now+getProcessingDelay(p));
 				mSched.addEvent(e);
-			} else { // compute queue utilization and update router state if necessary
-				double qutil = queueUtilization();
-				switch(mCongestionState) {
-					case NORMAL_LOAD: {
-						if(qutil > HIGH_LOAD_THRESHOLD) {
-							updateCongestionState(CongestionState.HIGH_LOAD);
-						}
-					}
-					case HIGH_LOAD: {
-						if(qutil < HIGH_LOAD_THRESHOLD - DOWNGRADE_THRESHOLD_PADDING) {
-							updateCongestionState(CongestionState.NORMAL_LOAD);
-						}
-					}
-					case OVERLOAD: {
-						if(qutil < HIGH_LOAD_THRESHOLD - DOWNGRADE_THRESHOLD_PADDING) {
-							updateCongestionState(CongestionState.NORMAL_LOAD);
-						} else if(qutil < 1.0 - DOWNGRADE_THRESHOLD_PADDING) {
-							updateCongestionState(CongestionState.HIGH_LOAD);
-						}
-					}
-				}
 			}
+
+			// compute queue utilization and update router state if necessary
+			// used to be else-state for queueSize() == 1, but then can't test with queue-size 1
+			double qutil = queueUtilization();
+			//System.out.println(getId()+": qutil="+qutil+", cs="+mCongestionState); // DEBUG
+			switch(mCongestionState) {
+				case NORMAL_LOAD: {
+					if(qutil > HIGH_LOAD_THRESHOLD) {
+						updateCongestionState(CongestionState.HIGH_LOAD);
+					}
+					break;
+				}
+				case HIGH_LOAD: {
+					if(qutil < HIGH_LOAD_THRESHOLD - DOWNGRADE_THRESHOLD_PADDING) {
+						updateCongestionState(CongestionState.NORMAL_LOAD);
+					}
+					break;
+				}
+				case OVERLOAD: {
+					if(qutil < HIGH_LOAD_THRESHOLD - DOWNGRADE_THRESHOLD_PADDING) {
+						updateCongestionState(CongestionState.NORMAL_LOAD);
+					} else if(qutil < 1.0 - DOWNGRADE_THRESHOLD_PADDING) {
+						updateCongestionState(CongestionState.HIGH_LOAD);
+					}
+					break;
+				}
+				default:
+					SimLogger.logError("Received invalid CongestionState");
+					break;
+			}
+
 		} else { // queue is full, drop packet
 			if(mCongestionState != CongestionState.OVERLOAD) {
 				updateCongestionState(CongestionState.OVERLOAD);
@@ -211,6 +223,7 @@ public class CARouter extends Host {
 	}
 
 	protected void updateCongestionState(CongestionState cs) {
+		//System.out.println("CARouter: "+getId()+" updates CongestionState to "+cs); // DEBUG
 		mCongestionState = cs;
 		if(GiveStateUpdatesPriority) {
 			// send congestions state update packets on all links
