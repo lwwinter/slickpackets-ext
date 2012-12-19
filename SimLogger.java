@@ -51,7 +51,7 @@ public class SimLogger {
 				timestamp = sched.getGlobalSimTime();
 			}
 
-			System.out.println("Drop: @ " + dropPoint.getId() +", simTime = " + timestamp);
+			System.out.println("Drop("+timestamp+"): @ " + dropPoint.getId());
 			logDelays(p);
 			writeLog("Drop, "+p.eventGroupId()+", "+dropPoint.getId()+", "+ timestamp);
 			collectData(p,false);
@@ -69,8 +69,10 @@ public class SimLogger {
 	// Prints to stdout
 	public static void logEventLoss(SchedulableType type, ISchedulerSource lossPoint) {
 		if(GlobalSimSettings.LogEventLoss) {
-			System.out.println("EventLoss: type = " + type + " not understood by " +
-					lossPoint.getId());
+			SimScheduler sched = lossPoint.getScheduler();
+			long timestamp = (sched != null) ? sched.getGlobalSimTime() : -1;
+			System.out.println("EventLoss("+timestamp+"): type = " + type + " not understood by " +
+
 			writeLog("EventLoss, type = " + type + ", not understood by " +
 					lossPoint.getId());
 		}
@@ -85,8 +87,9 @@ public class SimLogger {
 				timestamp = sched.getGlobalSimTime();
 			}
 			
-			System.out.println("EventArrive: event groupID= " + p.eventGroupId() + " arrived at " +
-					endHost.getId());
+			System.out.println("EventArrive("+timestamp+"): packet "+p.getPacketId()+", type="+p.getType()+", egid=" + p.eventGroupId() + " arrived at " +
+ 					endHost.getId());
+
 			writeLog("Arrive, "+p.eventGroupId()+", "+endHost.getId()+", "+ timestamp);
 			collectData(p,true);
 		}
@@ -101,7 +104,7 @@ public class SimLogger {
 				timestamp = sched.getGlobalSimTime();
 			}
 			
-			System.out.println("Trace: packet with egid=" + p.eventGroupId() + " @ " + location.getId());
+			System.out.println("Trace("+timestamp+"): packet "+p.getPacketId()+", type="+p.getType()+", egid=" + p.eventGroupId() + " @ " + location.getId());
 			writeLog("Trace, "+p.eventGroupId()+", "+location.getId()+", "+ timestamp);
 		}
 	}
