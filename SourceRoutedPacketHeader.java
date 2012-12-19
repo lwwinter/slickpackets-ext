@@ -31,5 +31,9 @@ public class SourceRoutedPacketHeader extends PacketHeader {
 	public void setNewPath(LinkedList<Link> path){
 		mPath = path ;
 		mIndex = 0;
-	}	
+	}
+
+	public LinkedList<Link> getPath() {
+		return mPath;
+	}
 }

@@ -1,5 +1,8 @@
 <slick-packets>
 	<network id="TestSlick">
+		<globals-list>
+			<global name="LogDrops" value="true"/>
+		</globals-list>
 		<hosts-list>
 			<host type="Router" id="RTR1" queue-size="25" throughput="5000000"/>
 			<host type="Router" id="RTR2" queue-size="10" throughput="5000000"/>

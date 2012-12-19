@@ -3,22 +3,29 @@ import java.util.LinkedList;
 
 //package org.timecrunch;
 
-public class SlickPacketHeader extends PacketHeader {
+public class SlickPacketExtHeader extends PacketHeader {
 
 	protected LinkedList<Link> mPath ;
 	// not necessarily part of a source-routed header but very easy for header processing
 	protected int mIndex;
 	protected ArrayList<LinkedList<Link>> mFailovers;
+	protected int mProbeSeqNum;
+	protected boolean mSplitProbe;
+	protected Host mSrc;
 	
-	public SlickPacketHeader() {
-		this(null,null);
+	public SlickPacketExtHeader() {
+		this(null,null,SlickPacketExt.PROBES_NOT_ALLOWED);
 	}
 
-	public SlickPacketHeader(LinkedList<Link> path, ArrayList<LinkedList<Link>> failovers) {
-		super(PacketType.SLICK_PACKET);
+	public SlickPacketExtHeader(LinkedList<Link> path, ArrayList<LinkedList<Link>> failovers,
+			int probeSeqNum) {
+		super(PacketType.SLICK_PACKET_EXT);
 		mPath = path ;
 		mIndex = 0;
 		mFailovers = failovers;
+		mProbeSeqNum = probeSeqNum;
+		mSplitProbe = false;
+		mSrc = null;
 	}
 
 	//additional data/functionality, like path to take
@@ -52,5 +59,17 @@ public class SlickPacketHeader extends PacketHeader {
 
 	public LinkedList<Link> getPath() {
 		return mPath;
+	}
+
+	public void setSrc(Host src) {
+		mSrc = src;
+	}
+
+	public boolean canSendProbes() {
+		return (mProbeSeqNum != SlickPacketExt.PROBES_NOT_ALLOWED);
+	}
+
+	public boolean hasSplitProbe() {
+		return mSplitProbe;
 	}
 }

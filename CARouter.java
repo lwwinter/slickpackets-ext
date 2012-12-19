@@ -236,20 +236,31 @@ public class CARouter extends Host {
 	public Link forward(Packet p) {
 		Link link = null ;
 
+		// TODO: May be able to clean this up even further with proper ordering and fallthroughs
+		// TODO: Safer to ignore unknown packets; explicitly handle NO_TYPE with super.forward(p)
 		switch(p.getType()) {
 			case CONGESTION_STATE_UPDATE:
 				// ignore packet - should already be processed
 				break;
+
+			case SLICK_PACKET_EXT:
+				// intentional fallthrough
 			case SLICK_PACKET: {
-				SlickPacketHeader header = (SlickPacketHeader) p.getHeader() ;
-				link = header.getNextLink() ;
+				ISlickPackets sp = (ISlickPackets)p;
+				link = sp.getNextLink();
 				break;
 			}
+
+			case PROBE_PACKET:
+				// intentional fallthrough
+			case PROBE_ACK:
+				// intentional fallthrough
 			case SOURCE_ROUTED: {
-				SourceRoutedPacketHeader header = (SourceRoutedPacketHeader) p.getHeader() ;
-				link = header.getNextLink() ;
+				ISourceRoutable sp = (ISourceRoutable)p;
+				link = sp.getNextLink() ;
 				break;
 			}
+
 			default:
 				link = super.forward(p);
 				break;

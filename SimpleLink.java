@@ -54,6 +54,11 @@ public class SimpleLink extends Link {
 		return temp;
 	}
 
+	@Override
+	public long getLatency() {
+		return mLatency;
+	}
+
 	public long getDelayUntilFree(Host src) {
 		SimplexLink link = getLinkBySource(src);
 		if(link != null) {

@@ -76,14 +76,23 @@ public class EndHost extends Host {
 
 		switch(p.getType()) {
 			case CONGESTION_STATE_UPDATE:
-				// ignore packet
+				// ignore packet - should already be processed
 				break;
+
+			case SLICK_PACKET_EXT:
+				// intentional fallthrough
 			case SLICK_PACKET:
-				link = slickPacketHandler(p);
+				link = slickPacketHandler((ISlickPackets)p);
 				break;
+
+			case PROBE_PACKET:
+				// intentional fallthrough
+			case PROBE_ACK:
+				//intentional fallthrough
 			case SOURCE_ROUTED:
-				link = sourceRoutedPacketHandler(p);
+				link = sourceRoutedPacketHandler((ISourceRoutable)p);
 				break;
+
 			default:
 				link = super.forward(p);
 				break;
@@ -92,11 +101,10 @@ public class EndHost extends Host {
 		return link;
 	}
 
-	private Link sourceRoutedPacketHandler(Packet p) {
+	private Link sourceRoutedPacketHandler(ISourceRoutable sr) {
 		LinkedList<Link> path;
 		NetworkGraph ng = mSched.getNetworkGraph();
-		SourceRoutedPacketHeader header = (SourceRoutedPacketHeader)p.getHeader();
-		Host dest = p.getDest();
+		Host dest = sr.getDest();
 		if(ng != null && dest != null) {
 			RouteCacheEntry rce = mRouteCache.get(dest);
 			if(rce == null || rce.stale || rce.path == null) {
@@ -109,19 +117,18 @@ public class EndHost extends Host {
 
 			// copy path and set in header
 			// TODO: should be safe (and faster) to not copy - check
-			header.setNewPath(new LinkedList<Link>(path));
+			sr.setNewPath(new LinkedList<Link>(path));
 		}
 
 		// else no destination or no access to NetworkGraph - returns null
-		return header.getNextLink();
+		return sr.getNextLink();
 	}
 
-	private Link slickPacketHandler(Packet p) {
+	private Link slickPacketHandler(ISlickPackets sp) {
 		LinkedList<Link> path;
 		ArrayList<LinkedList<Link>> failovers;
 		NetworkGraph ng = mSched.getNetworkGraph();
-		SlickPacketHeader header = (SlickPacketHeader)p.getHeader();
-		Host dest = p.getDest();
+		Host dest = sp.getDest();
 		if(ng != null && dest != null) {
 			RouteCacheEntry rce = mRouteCache.get(dest);
 			if(rce == null || rce.stale || rce.path == null || rce.failovers == null) {
@@ -136,11 +143,11 @@ public class EndHost extends Host {
 
 			// copy path and set in header
 			// TODO: should be safe (and faster) to not copy - check
-			header.setNewPath(new LinkedList<Link>(path),failovers);
+			sp.setNewPath(new LinkedList<Link>(path),failovers);
 		}
 
 		// else no destination or no access to NetworkGraph - returns null
-		return header.getNextLink();
+		return sp.getNextLink();
 	}
 
 	//public void schedCallback(SchedulableType type); // handled in superclass (Host)

@@ -3,7 +3,7 @@
 import java.util.LinkedList;
 
 // Extend Packet as needed (generally needs corresponding PacketHeader)
-public class Packet implements ISchedulable {
+public class Packet implements ISchedulable, IRoutable {
 	// CONSTANTS
 	protected static final int DEFAULT_EVENT_GROUP_ID = 0;
 

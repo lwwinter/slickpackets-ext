@@ -32,6 +32,11 @@ public class SimplexLink extends Link {
 		return mDstHost;
 	}
 
+	@Override
+	public long getLatency() {
+		return mLatency;
+	}
+
 	public long getDelayUntilFree(Host src) {
 		// 'src' may be anything (including null) for SimplexLink's call
 		return getDelayUntilFree();

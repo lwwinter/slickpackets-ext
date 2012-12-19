@@ -42,6 +42,11 @@ public abstract class Link extends DefaultWeightedEdge implements ISchedulerSour
 
 	public abstract long getDelayUntilFree(Host src);
 
+	// effectively abstract - all links with actual latency should override
+	public long getLatency() {
+		return 0;
+	}
+
 	public boolean isEnabled() {
 		return mEnabled;
 	}
