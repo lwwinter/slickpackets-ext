@@ -24,7 +24,7 @@ public class SlickPacketHeader extends PacketHeader {
 	//additional data/functionality, like path to take
 	
 	public Link getNextLink(){
-		if(mPath != null) {
+		if(mPath != null && mIndex < mPath.size()) {
 			return  mPath.get(mIndex++);
 		}
 
